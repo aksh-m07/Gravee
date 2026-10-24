@@ -1,0 +1,20 @@
+{
+  "syntheticDecision": true,
+  "decision": "43e584ddc434c7ef",
+  "verificationRequest": "5a1a1bc4f71774af6267428db6fa93dd",
+  "candidateDigest": "7d885350173d2b05d3af4a869484115e7c9e5563fa3c1f62ec4e1531eafcb3d2",
+  "status": "guidance",
+  "returnedGuidance": "FIX (request 5a1a1bc4f71774af6267428db6fa93dd)\nIn price.py change only the return line of discounted() to:\n    return (cents * (100 - percent) + 50) // 100\nCause: the old code (cents - cents * percent) never divides by 100.\nDo not edit test_price.py (sha256 09dfb909...556554) or verify-request.py.\nRe-run python3 verify-request.py request.json result on a fresh snapshot in a new directory.\n\nTESTED: scratch copy only, candidate not modified. With unchanged tests: 3/3 OK, exit 0.\nNOT TESTED: full verifier run on a repackaged candidate (needs new request/digest).\n\nLIMITS: Only covers integer cents with percent 0-100. Negative values aren't\nrounded half-up. Out-of-range percents are undefined. Rounds exact halves up,\nnot to even; confirm which the business wants.\n",
+  "originalSha256": "9245b87588d68872273ba7dc0792d2bd47f7453db03b449df7bf611840fb460f",
+  "exactMatch": true,
+  "handoffCount": 1,
+  "approvalConsumed": false,
+  "actionExecuted": false,
+  "source": {
+    "kind": "captured_grokbot_artifact",
+    "verificationProvenance": "operator_observed_grokbot",
+    "note": "Operator-supplied source label; not authenticated remote authorship"
+  },
+  "nativeClaudeVerified": false,
+  "actualVoiskeyVerified": false
+}
