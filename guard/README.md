@@ -6,6 +6,8 @@ The primary product is supervision of Claude Code on a coding project. Existing 
 
 ## Local setup
 
+Optional external acceptance verification: [GROKBOT_TEST.md](GROKBOT_TEST.md) documents candidate export, actual GrokBot execution, validated report import and an explicitly requested private Telegram result briefing. This stage never grants approval or automatically intercepts Claude completion.
+
 Use Node 24.15.0 (repository `.nvmrc`). Claude Code **2.1.295 or newer is required** for the `onFailure: "block"` timeout protection; the inspected local version is 2.1.310. See [official hook documentation](https://code.claude.com/docs/en/hooks).
 
 From the repository root:

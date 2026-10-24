@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "requestId": "5a1a1bc4f71774af6267428db6fa93dd",
+  "candidateDigest": "7d885350173d2b05d3af4a869484115e7c9e5563fa3c1f62ec4e1531eafcb3d2",
+  "verifier": "GrokBot (manual file handoff; provenance requires observation)",
+  "result": "failed",
+  "checks": [
+    {
+      "id": "acceptance",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_price.py"
+      ],
+      "status": "failed",
+      "exitStatus": 1,
+      "output": "STDOUT:\n\nSTDERR:\ntest_discount (test_price.Acceptance.test_discount) ... FAIL\ntest_nearest_cent (test_price.Acceptance.test_nearest_cent) ... FAIL\ntest_zero_discount (test_price.Acceptance.test_zero_discount) ... ok\n\n======================================================================\nFAIL: test_discount (test_price.Acceptance.test_discount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/graveyard-verifier-26uoc1e1/test_price.py\", line 7, in test_discount\n    self.assertEqual(discounted(1000, 20), 800)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: -19000 != 800\n\n======================================================================\nFAIL: test_nearest_cent (test_price.Acceptance.test_nearest_cent)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/graveyard-verifier-26uoc1e1/test_price.py\", line 10, in test_nearest_cent\n    self.assertEqual(discounted(999, 15), 849)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: -13986 != 849\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=2)\n",
+      "candidateUnchanged": true
+    }
+  ],
+  "findings": [
+    "Observed acceptance command result: failed. See captured output; hypotheses are not execution evidence."
+  ],
+  "limitations": [
+    "Manual file handoff; report identity is not cryptographic proof of execution.",
+    "Checks cover the supplied acceptance tests only; no production correctness claim."
+  ],
+  "environment": "Linux-6.12.94+-x86_64-with-glibc2.41; Python 3.13.5"
+}

@@ -1,0 +1,6 @@
+{
+  "task": "Verify the deliberately defective discount fixture. Do not fix it. This fixture is not a Claude-produced candidate.",
+  "acceptanceCriteria": ["20 percent off 1000 cents is 800 cents", "15 percent off 999 cents rounds to 849 cents", "Zero discount preserves the price"],
+  "files": ["price.py", "test_price.py"],
+  "checks": [{"id": "acceptance", "command": ["python3", "-m", "unittest", "-v", "test_price.py"]}]
+}

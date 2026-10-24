@@ -8,6 +8,8 @@ Start with the [terminal setup and verification limits](guard/README.md) or the 
 
 The existing browser sandbox below remains a verified secondary baseline: it tracks observable requirements, validates recovery proposals, and checks their results. Its shop and worker are simulated/scripted.
 
+The optional [GrokBot verification worker](guard/GROKBOT_TEST.md) exports a small candidate snapshot for acceptance checks on an actual Bot's computer, then validates/imports its report. File transfer is manual; snapshot matching is not proof of external execution and verification never approves an action.
+
 > Status and caveats are tracked in [`HACKATHON_STATE.md`](HACKATHON_STATE.md). Everything below is labelled built, partial or not run.
 
 ## Browser sandbox baseline: how it works

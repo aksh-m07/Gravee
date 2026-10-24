@@ -1,0 +1,11 @@
+STDOUT:
+
+STDERR:
+test_discount (test_price.Acceptance.test_discount) ... ok
+test_nearest_cent (test_price.Acceptance.test_nearest_cent) ... ok
+test_zero_discount (test_price.Acceptance.test_zero_discount) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK
