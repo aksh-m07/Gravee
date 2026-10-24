@@ -3,6 +3,7 @@ import { DecisionStore, acquireConsumer, fingerprint, readJson, writeJson } from
 import { redact } from "./config.mjs";
 import { readReply } from "./phone.mjs";
 import { evidenceFor, interpretReply, validateInterpretation, MAX_USER_TURNS, MAX_CONVERSATION_REQUESTS, answerFromFacts, acknowledgeGuidance, clarificationFor } from "./conversation.mjs";
+import { attachedGuidance, claimAttachedGuidance, closeGuidanceMessage } from "./grok-guidance.mjs";
 
 export class Telegram {
   constructor(token, fetcher = fetch) { this.token = token; this.fetcher = fetcher; }
@@ -63,10 +64,16 @@ export async function notifyDecision(api, store, d) {
 }
 
 /** Pure binding/classification before any state transition. */
-export function classifyUpdate(update, d, now = Date.now()) {
+export function classifyUpdate(update, d, now = Date.now(), attachment = null) {
   if (!Number.isSafeInteger(update.update_id) || d.status !== "pending" || now >= d.expiresAt || d.seenUpdateIds?.includes(update.update_id)) return null;
   const cb = update.callback_query;
   if (cb) {
+    const external = /^gg:([ups]):([a-f0-9]{16}):([a-f0-9]{16})$/.exec(cb.data ?? "");
+    if (external) {
+      if (!attachment || external[2] !== d.id || external[3] !== attachment.id || cb.message?.message_id !== attachment.messageId || String(cb.from?.id) !== d.owner || String(cb.message?.chat?.id) !== d.chat || cb.message?.chat?.type !== "private") return null;
+      if (external[1] === "u" && (!attachment.guidance || attachment.used)) return null;
+      return { kind: { u: "grok_guidance", p: "pause", s: "stop" }[external[1]], original: external[1] === "u" ? attachment.guidance : `inline:${external[1]}`, attachmentId: attachment.id, callbackId: cb.id };
+    }
     if (String(cb.from?.id) !== d.owner || String(cb.message?.chat?.id) !== d.chat || cb.message?.chat?.type !== "private" || cb.message.message_id !== d.messageId) return null;
     const m = /^gs:([agrs]):([a-f0-9]{16})$/.exec(cb.data ?? "");
     if (!m || m[2] !== d.id) return null;
@@ -80,24 +87,37 @@ export function classifyUpdate(update, d, now = Date.now()) {
   return { kind: r.kind === "instruct" ? "text" : r.kind, original: m.text };
 }
 
-export async function waitForDecision({ api, store, decision, onUpdate = () => {}, interpret = interpretReply, reserve = () => true }) {
+export async function waitForDecision(args) {
+  try { return await waitForDecisionInternal(args); }
+  finally { await closeGuidanceMessage(args.api, args.store, args.decision.id); }
+}
+
+async function waitForDecisionInternal({ api, store, decision, onUpdate = () => {}, interpret = interpretReply, reserve = () => true }) {
   let d = decision;
+  const classify = (update, current) => classifyUpdate(update, current, Date.now(), attachedGuidance(store, current));
   const offsetFile = path.join(store.home, "telegram-offset.json");
   let offset = readJson(offsetFile, { offset: 0 }).offset;
   let queued = [];
-  const priority = { stop: 0, deny: 1, text: 2, ambiguous: 3, prompt: 3, approve: 4 };
+  const priority = { stop: 0, deny: 1, grok_guidance: 2, text: 2, pause: 3, ambiguous: 3, prompt: 3, approve: 4 };
   const save = () => store.save(d);
   async function say(text) {
     const m = await api.call("sendMessage", { chat_id: d.chat, text: `${text}\n\nDecision: ${d.id}. The original deadline is unchanged.`,
       reply_markup: { force_reply: true, selective: true } }, Math.min(d.expiresAt, Date.now() + 5000));
-    d.replyMessageIds.push(m.message_id); save();
+    const current = store.validate(d.id, d);
+    if (!current || current.status !== "pending") throw new Error("Decision changed during message delivery");
+    d = current; d.replyMessageIds.push(m.message_id); save();
   }
-  function finish(status) { d.status = status; save(); return d; }
+  function finish(status) {
+    const current = store.validate(d.id, d);
+    if (!current || current.status !== "pending") return store.get(d.id);
+    if (d.failure) current.failure = d.failure;
+    d = current; d.status = status; save(); return d;
+  }
   function transportFailure(error, phase) { d.failure = { phase, detail: redact(error.message).replace(/https?:\/\/[^\s]+/g, "[URL]").slice(0, 160) }; return finish(Date.now() >= d.expiresAt ? "expired" : "transport_failed"); }
-  const vetoIn = (updates) => updates.find((u) => classifyUpdate(u, d)?.kind === "stop") || updates.find((u) => classifyUpdate(u, d)?.kind === "deny");
+  const vetoIn = (updates) => updates.find((u) => classify(u, d)?.kind === "stop") || updates.find((u) => classify(u, d)?.kind === "deny");
   function honorVeto(veto) {
     offset = Math.max(offset, veto.update_id + 1); writeJson(offsetFile, { offset });
-    const control = classifyUpdate(veto, d); d.seenUpdateIds.push(veto.update_id); save();
+    const control = classify(veto, d); d.seenUpdateIds.push(veto.update_id); save();
     return store.resolve(d.id, d, control.original, control.kind) ?? store.get(d.id);
   }
   while (d.status === "pending" && Date.now() < d.expiresAt) {
@@ -105,13 +125,13 @@ export async function waitForDecision({ api, store, decision, onUpdate = () => {
     try { updates = queued.length ? queued.splice(0) : await api.updates(offset, d.expiresAt); }
     catch (e) { return transportFailure(e, "updates"); }
     if (!Array.isArray(updates)) return finish("transport_failed");
-    updates.sort((a, b) => (priority[classifyUpdate(a, d)?.kind] ?? 99) - (priority[classifyUpdate(b, d)?.kind] ?? 99));
+    updates.sort((a, b) => (priority[classify(a, d)?.kind] ?? 99) - (priority[classify(b, d)?.kind] ?? 99));
     for (let i = 0; i < updates.length; i++) {
       const update = updates[i];
       if (!Number.isSafeInteger(update.update_id)) continue;
       offset = Math.max(offset, update.update_id + 1); writeJson(offsetFile, { offset });
       d = store.get(d.id);
-      const reply = classifyUpdate(update, d);
+      const reply = classify(update, d);
       if (!reply) continue;
       d.seenUpdateIds.push(update.update_id); d.seenUpdateIds = d.seenUpdateIds.slice(-64); save();
       if (reply.callbackId) await api.call("answerCallbackQuery", { callback_query_id: reply.callbackId, text: "Received for this decision." }, Math.min(d.expiresAt, Date.now() + 3000)).catch(() => {});
@@ -126,6 +146,36 @@ export async function waitForDecision({ api, store, decision, onUpdate = () => {
           if (veto) return honorVeto(veto);
         }
         d = store.resolve(d.id, d, reply.original, reply.kind) ?? store.get(d.id); onUpdate(d); return d;
+      }
+      if (reply.kind === "pause") {
+        try { await say("Kept paused. The held action remains blocked; the original deadline is unchanged."); }
+        catch { return finish("delivery_failed"); }
+        continue;
+      }
+      if (reply.kind === "grok_guidance") {
+        let latest;
+        try { latest = await api.updates(offset, Math.min(d.expiresAt, Date.now() + 5000), false); }
+        catch (e) { return transportFailure(e, "controls_before_grok_guidance"); }
+        if (!Array.isArray(latest)) return finish("transport_failed");
+        const veto = vetoIn([...updates.slice(i + 1), ...latest]);
+        if (veto) return honorVeto(veto);
+        const a = claimAttachedGuidance(store, d, reply.attachmentId);
+        if (!a) return store.get(d.id);
+        const acknowledgment = acknowledgeGuidance(a.guidance);
+        try { await say(acknowledgment); } catch { return finish("delivery_failed"); }
+        let finalUpdates;
+        try { finalUpdates = await api.updates(offset, Math.min(d.expiresAt, Date.now() + 5000), false); }
+        catch (e) { return transportFailure(e, "controls_after_grok_acknowledgment"); }
+        if (!Array.isArray(finalUpdates)) return finish("transport_failed");
+        const finalVeto = vetoIn([...updates.slice(i + 1), ...latest, ...finalUpdates]);
+        if (finalVeto) return honorVeto(finalVeto);
+        const checked = attachedGuidance(store, d);
+        if (!checked || checked.id !== a.id || Date.now() >= d.expiresAt) return store.get(d.id);
+        const result = store.resolve(d.id, d, a.guidance, "guidance");
+        if (!result) return store.get(d.id);
+        result.acknowledgment = acknowledgment;
+        result.grokGuidance = { attachmentId: a.id, request: a.request, candidateDigest: a.candidateDigest, source: a.source };
+        store.save(result); return result;
       }
       if (reply.kind === "prompt") {
         if (!d.guidancePrompted) {

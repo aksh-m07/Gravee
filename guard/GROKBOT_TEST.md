@@ -62,3 +62,33 @@ env -u GEMINI_API_KEY -u GOOGLE_API_KEY node --test guard/test/verification.test
 ```
 
 The tests run the helper locally against both defective and corrected temporary candidates and reject tampered content. Those are explicitly **local regression checks, not GrokBot evidence**. A corrected external demonstration requires a separate exported snapshot and actual Bot execution. Native authenticated Claude continuation and actual Voiskey use remain separate pending checks.
+
+## Attach findings and owner-selectable guidance to an existing decision
+
+While the existing synchronous hook is waiting, run from the repository root (replace `PENDING_DECISION_ID`):
+
+```bash
+node guard/verification.mjs attach --id 5a1a1bc4f71774af6267428db6fa93dd --decision PENDING_DECISION_ID --guidance-file guard/verification-demo/guidance-test.txt --source test_text
+```
+
+This exact fixture command sends actual imported GrokBot **test findings**, paired with an explicitly labelled **TEST recommendation, not Grok-authored**. It does not invoke GrokBot. For a real recommendation, manually obtain and save GrokBot's explicit response as a UTF-8 text file, then use `--guidance-file /absolute/path/recommendation.txt --source captured_grokbot_artifact`. The source label is an operator attestation, not authenticated authorship. Use `operator_entered` for your own recommendation. Do not infer a repair merely because tests failed.
+
+Omit `--guidance-file` for findings only; no Use action appears. Guidance is limited to 1,000 characters. Empty, oversized, or recognized secret-bearing text is rejected, never silently shortened. Telegram shows the **entire exact recommendation**; only findings/output excerpts are abbreviated, with full imported evidence retained locally.
+
+`attach` sends one message and registers its ID, private owner/chat, decision/session/action fingerprint/deadline, imported request/report digest, candidate digest, exact guidance and source in a separate private attachment record. It never starts an update consumer or extends expiry. Exactly one attachment is permitted per decision; uncertain delivery is not automatically retried. The existing waiting hook handles the registered buttons:
+
+- **Use Grok’s guidance:** revalidate, reserve once, acknowledge the exact recommendation, check for Stop/Reject, and resolve the existing `guidance` status. The existing hook returns it verbatim in a blocked-tool explanation. No approval, downloaded patch, command or link executes.
+- **Keep paused:** hold the action and preserve the original deadline.
+- **Stop task:** existing supported turn-stop behavior; no operating-system process-kill claim.
+
+Wrong owner/chat/message/attachment/decision, modified binding/report, cancelled/consumed/expired state and duplicate clicks cannot relay. Stop/Reject takes priority in the received batch and in the same consumer's control checks before/after acknowledgment. Buttons are removed when the waiter exits where Telegram delivery succeeds; authoritative state still rejects stale buttons if that display update fails.
+
+For finished/expired decisions, attaching sends **information only**, without actionable buttons, and explains that a fresh supported Claude continuation and explicit new attachment are required. There is no resume API, deadline extension, old approval reuse or automatic reattachment. GrokBot investigation can exceed the two-minute hook window; gather its recommendation first, then start a fresh decision if needed.
+
+Live transport-only demonstration:
+
+```bash
+node guard/smoke-grok-guidance.mjs
+```
+
+The already paired owner taps Use once. This creates a clearly labelled synthetic two-minute decision using actual imported fixture findings and the test recommendation. It never executes the proposed action, runs Claude, invokes GrokBot or calls Gemini. It holds the existing single-consumer lock. Do not run it alongside another waiting hook or poller. The successful October 24 test is recorded in `guard/evidence/grok-guidance-live.json`; this proves neither real Grok-authored guidance nor Claude/Voiskey continuation.

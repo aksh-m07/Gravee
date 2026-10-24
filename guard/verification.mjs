@@ -5,13 +5,15 @@ import { execFileSync } from "node:child_process";
 import { loadEnv, STATE_HOME, telegramConfig, redact, GUARD_ROOT } from "./lib/config.mjs";
 import { readJson, writeJson } from "./lib/decisions.mjs";
 import { createRequest, VerificationStore, notifyVerification } from "./lib/verification.mjs";
+import { attachGrokGuidance } from "./lib/grok-guidance.mjs";
+import { DecisionStore } from "./lib/decisions.mjs";
 import { Telegram } from "./lib/telegram.mjs";
 
 loadEnv();
 const [command, ...args] = process.argv.slice(2);
 const opts = {};
 for (let i = 0; i < args.length; i += 2) {
-  if (!/^--(project|spec|id|report|provenance)$/.test(args[i]) || !args[i + 1] || Object.hasOwn(opts, args[i])) throw new Error("Invalid command options");
+  if (!/^--(project|spec|id|report|provenance|decision|guidance-file|source)$/.test(args[i]) || !args[i + 1] || Object.hasOwn(opts, args[i])) throw new Error("Invalid command options");
   opts[args[i]] = args[i + 1];
 }
 const store = new VerificationStore(STATE_HOME());
@@ -27,6 +29,11 @@ try {
     const zip = path.join(dir, "grokbot-request.zip");
     execFileSync("zip", ["-q", "-j", zip, "request.json", "verify-request.py", "INSTRUCTIONS.md"], { cwd: transfer, timeout: 5000 }); fs.chmodSync(zip, 0o600);
     console.log(JSON.stringify({ ...store.status(request.requestId), package: zip, instructions: path.join(transfer, "INSTRUCTIONS.md") }, null, 2));
+  } else if (command === "attach") {
+    const config = telegramConfig(); if (!config) throw new Error("Paired private owner required");
+    const file = opts["--guidance-file"];
+    if (file && (fs.lstatSync(file).isSymbolicLink() || !fs.statSync(file).isFile() || fs.statSync(file).size > 4000)) throw new Error("Small regular guidance file required");
+    console.log(JSON.stringify(await attachGrokGuidance({ store: new DecisionStore(STATE_HOME()), verificationId: opts["--id"], decisionId: opts["--decision"], guidance: file ? fs.readFileSync(file, "utf8") : null, source: opts["--source"], config, api: new Telegram(config.token) }), null, 2));
   } else if (command === "import") {
     const file = opts["--report"]; if (!file || fs.lstatSync(file).isSymbolicLink() || !fs.statSync(file).isFile() || fs.statSync(file).size > 256_000) throw new Error("A small regular report file is required");
     console.log(JSON.stringify(store.import(opts["--id"], fs.readFileSync(file, "utf8"), opts["--provenance"]), null, 2));
@@ -38,5 +45,5 @@ try {
     const config = telegramConfig(); if (!config) throw new Error("Paired private Telegram configuration required");
     await notifyVerification(store, opts["--id"], new Telegram(config.token), config);
     console.log("Verification briefing delivered to the paired private owner. No decision/approval created.");
-  } else throw new Error("Commands: export --project DIR --spec FILE | import --id ID --report FILE [--provenance manual_unverified|operator_observed_grokbot|user_attested_grokbot] | status|cancel|notify --id ID");
+  } else throw new Error("Commands: export --project DIR --spec FILE | import --id ID --report FILE [--provenance manual_unverified|operator_observed_grokbot|user_attested_grokbot] | attach --id ID --decision ID [--guidance-file FILE --source test_text|operator_entered|captured_grokbot_artifact] | status|cancel|notify --id ID");
 } catch (error) { console.error(redact(error.message)); process.exitCode = 1; }

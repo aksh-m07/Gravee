@@ -8,6 +8,8 @@ The primary product is supervision of Claude Code on a coding project. Existing 
 
 Optional external acceptance verification: [GROKBOT_TEST.md](GROKBOT_TEST.md) documents candidate export, actual GrokBot execution, validated report import and an explicitly requested private Telegram result briefing. This stage never grants approval or automatically intercepts Claude completion.
 
+Its `attach` command can also link imported findings and an explicitly sourced recommendation to a current held decision. Telegram's **Use Grok’s guidance** returns the displayed recommendation through the existing blocked-tool guidance route. Manual GrokBot handoff remains manual; finished decisions are information only. The live button was exercised with clearly labelled test guidance, not a Grok-authored repair.
+
 Use Node 24.15.0 (repository `.nvmrc`). Claude Code **2.1.295 or newer is required** for the `onFailure: "block"` timeout protection; the inspected local version is 2.1.310. See [official hook documentation](https://code.claude.com/docs/en/hooks).
 
 From the repository root:
@@ -91,7 +93,7 @@ For an authenticated teammate's safe worktree, single-machine bot handoff, local
 
 `PreToolUse` is a synchronous supported hook. While it runs, the proposed tool call has not received an allow result. Guidance/rejection return `permissionDecision: "deny"` with an explanation Claude can use to choose its next step. Explicit approval returns `allow` for that exact call. Stop/failure/silence return both `deny` and `continue: false`.
 
-Installed PreToolUse timeout is **180 seconds**, with `onFailure: "block"`. Internal bounds are: Gemini total assessment deadline at most 20 seconds (12 seconds by default), Telegram decision lifetime at most 120 seconds including delivery/clarification, and final status edits at most 4 seconds total (3 seconds normally, plus a 1-second correction if final approval validation fails). No detached reply process is used. A missing/broken/killed hook is blocked by Claude's configured failure behavior on supported versions. Native timeout behavior still needs an authenticated Claude session test on this Mac.
+Installed PreToolUse timeout is **180 seconds**, with `onFailure: "block"`. Internal bounds are: Gemini total assessment deadline at most 20 seconds (12 seconds by default), Telegram decision lifetime at most 120 seconds including delivery/clarification, and original decision status edits at most 4 seconds total (3 seconds normally, plus a 1-second correction if final approval validation fails). Closing an optional Grok guidance attachment adds at most 3 seconds; it cannot extend the decision expiry. No detached reply process is used. A missing/broken/killed hook is blocked by Claude's configured failure behavior on supported versions. Native timeout behavior still needs an authenticated Claude session test on this Mac.
 
 Silence, notification failure and transport failure invalidate the decision and stop the turn; the held action is not authorized. The Telegram message is updated with the final status and buttons removed when possible. A failed final status edit cannot authorize an action. If disconnected, inspect local `status` to resolve stale visible buttons.
 

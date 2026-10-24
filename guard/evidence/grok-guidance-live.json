@@ -1,0 +1,14 @@
+{
+  "syntheticDecision": true,
+  "decision": "6e380f2ef815e0d0",
+  "verificationRequest": "5a1a1bc4f71774af6267428db6fa93dd",
+  "candidateDigest": "7d885350173d2b05d3af4a869484115e7c9e5563fa3c1f62ec4e1531eafcb3d2",
+  "status": "guidance",
+  "guidance": "Do not push the held action. Inspect the percentage calculation and rounding first. Keep the acceptance tests unchanged. Only report completion after those tests pass.",
+  "source": "test_text; not Grok-authored",
+  "approvalConsumed": false,
+  "actionExecuted": false,
+  "nativeClaudeVerified": false,
+  "voiskeyVerified": false,
+  "observed": "Real paired-owner Telegram button callback accepted and returned by explicit test caller"
+}
