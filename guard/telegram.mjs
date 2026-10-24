@@ -47,13 +47,17 @@ async function main() {
   if (command === "pair") return pair();
   const config = telegramConfig();
   if (command === "status") {
+    const lock = path.join(home, "telegram.lock");
+    const consumer = readJson(path.join(lock, "owner.json"));
+    let consumerRunning = fs.existsSync(lock) ? "unknown" : false;
+    if (consumer?.pid) { try { process.kill(consumer.pid, 0); consumerRunning = true; } catch (e) { consumerRunning = e.code === "ESRCH" ? false : "unknown"; } }
     const active = new DecisionStore(home).active();
     let effectiveStatus = active?.status;
     if (active && ["pending", "approved"].includes(active.status)) {
       if (Date.now() >= active.expiresAt) effectiveStatus = "expired";
       else { try { process.kill(active.pid, 0); } catch (e) { if (e.code === "ESRCH") effectiveStatus = "interrupted"; } }
     }
-    console.log(JSON.stringify({ tokenConfigured: !!token, ownerPaired: !!config, stateDirectory: home,
+    console.log(JSON.stringify({ tokenConfigured: !!token, ownerPaired: !!config, stateDirectory: home, consumerRunning,
       activeDecision: active ? { id: active.id, session: active.sid, status: effectiveStatus, expiresAt: active.expiresAt, approvalConsumed: active.consumed } : null }));
     if (token) { const me = await new Telegram(token).call("getMe", {}); console.log(`Bot verified: @${me.username}`); }
     return;
@@ -64,7 +68,7 @@ async function main() {
   const action = { sid, tool: "GuidanceTest", input: {}, cwd: process.cwd() };
   const { result } = await escalateTelegram({ home, config, ...action, actionHash: fingerprint(action),
     goal: "Transport-only guidance test; no Claude action will execute.", history: [], question: "Tap Reply with guidance. Dictate 'Use a new branch instead' with Voiskey, then press Send. Typed text is a fallback.", verdict: "Manual transport test, not proof of a Claude session.", expiresAt: Date.now() + 120000 });
-  console.log(JSON.stringify({ decision: result.id, status: result.status, receivedText: redact(result.originalReply), expiresAt: result.expiresAt, terminalSession: false }));
+  console.log(JSON.stringify({ decision: result.id, status: result.status, receivedText: redact(result.originalReply), acknowledgment: result.acknowledgment, modelRequests: result.modelRequests, expiresAt: result.expiresAt, terminalSession: false }, (_k, v) => typeof v === "string" ? redact(v) : v));
   if (result.status !== "guidance") process.exitCode = 1;
 }
 main().catch((e) => { console.error(redact(e.message).replace(/https?:\/\/[^\s]+/g, "[URL]").slice(0, 300)); process.exitCode = 1; });

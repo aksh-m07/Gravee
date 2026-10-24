@@ -23,11 +23,12 @@ export class DecisionStore {
   get(id) { return readJson(this.file(id)); }
   save(d) { writeJson(this.file(d.id), d); return d; }
   active() { const a = readJson(path.join(this.home, "active.json")); return a ? this.get(a.id) : null; }
-  create({ sid, actionHash, owner, chat, expiresAt, briefing, approvalEligible }) {
+  create({ sid, actionHash, owner, chat, expiresAt, briefing, approvalEligible, evidence = [] }) {
     const old = this.active();
     if (old && ["pending", "approved"].includes(old.status)) throw new Error("A decision is already active");
     const d = { id: crypto.randomBytes(8).toString("hex"), sid, actionHash, owner, chat, expiresAt, briefing,
-      approvalEligible, status: "pending", consumed: false, delivery: "unsent", messageId: null, replyMessageIds: [], replies: [], clarified: false, guidancePrompted: false, pid: process.pid };
+      approvalEligible, evidence, userTurns: 0, modelRequests: 0, conversation: [], seenUpdateIds: [],
+      status: "pending", consumed: false, delivery: "unsent", messageId: null, replyMessageIds: [], replies: [], clarified: false, guidancePrompted: false, pid: process.pid };
     this.save(d); writeJson(path.join(this.home, "active.json"), { id: d.id }); return d;
   }
   validate(id, scope) {

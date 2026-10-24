@@ -2,26 +2,29 @@ import path from "node:path";
 import { DecisionStore, acquireConsumer, fingerprint, readJson, writeJson } from "./decisions.mjs";
 import { redact } from "./config.mjs";
 import { readReply } from "./phone.mjs";
+import { evidenceFor, interpretReply, validateInterpretation, MAX_USER_TURNS, MAX_CONVERSATION_REQUESTS, answerFromFacts, acknowledgeGuidance, clarificationFor } from "./conversation.mjs";
 
 export class Telegram {
   constructor(token, fetcher = fetch) { this.token = token; this.fetcher = fetcher; }
   async call(method, body, deadline = Date.now() + 8000) {
     const remaining = deadline - Date.now();
+    let status;
     if (remaining <= 0) throw new Error("Telegram deadline expired");
     try {
       const r = await this.fetcher(`https://api.telegram.org/bot${this.token}/${method}`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(Math.min(25_000, remaining)),
       });
       const j = await r.json();
+      status = Number.isInteger(j.error_code) ? j.error_code : r.status;
       if (!r.ok || !j.ok) throw new Error(`Telegram ${method} failed (${r.status})`);
       return j.result;
     } catch (e) {
       // Network exceptions can contain the token-bearing URL. Never propagate those details.
-      throw new Error(`Telegram ${method} unavailable${e.name === "TimeoutError" ? " (timeout)" : ""}`);
+      throw new Error(`Telegram ${method} unavailable${e.name === "TimeoutError" ? " (timeout)" : status ? ` (HTTP ${status})` : ""}`);
     }
   }
-  updates(offset, deadline) {
-    return this.call("getUpdates", { offset, timeout: Math.max(0, Math.min(20, Math.floor((deadline - Date.now() - 500) / 1000))), allowed_updates: ["message", "callback_query"] }, deadline);
+  updates(offset, deadline, wait = true) {
+    return this.call("getUpdates", { offset, timeout: wait ? Math.max(0, Math.min(20, Math.floor((deadline - Date.now() - 500) / 1000))) : 0, allowed_updates: ["message", "callback_query"] }, deadline);
   }
 }
 
@@ -48,7 +51,7 @@ export async function notifyDecision(api, store, d) {
   d.delivery = "sending"; store.save(d); // uncertain delivery is never retried
   const rows = [
     ...(d.approvalEligible ? [[{ text: "Approve this action once", callback_data: `gs:a:${d.id}` }]] : []),
-    [{ text: "Reply with guidance", callback_data: `gs:g:${d.id}` }],
+    [{ text: "Ask or give guidance", callback_data: `gs:g:${d.id}` }],
     [{ text: "Reject action", callback_data: `gs:r:${d.id}` }, { text: "Stop task", callback_data: `gs:s:${d.id}` }],
   ];
   try {
@@ -61,7 +64,7 @@ export async function notifyDecision(api, store, d) {
 
 /** Pure binding/classification before any state transition. */
 export function classifyUpdate(update, d, now = Date.now()) {
-  if (d.status !== "pending" || now >= d.expiresAt) return null;
+  if (!Number.isSafeInteger(update.update_id) || d.status !== "pending" || now >= d.expiresAt || d.seenUpdateIds?.includes(update.update_id)) return null;
   const cb = update.callback_query;
   if (cb) {
     if (String(cb.from?.id) !== d.owner || String(cb.message?.chat?.id) !== d.chat || cb.message?.chat?.type !== "private" || cb.message.message_id !== d.messageId) return null;
@@ -74,60 +77,140 @@ export function classifyUpdate(update, d, now = Date.now()) {
   const m = update.message;
   if (!m || String(m.from?.id) !== d.owner || String(m.chat?.id) !== d.chat || m.chat?.type !== "private" || !d.replyMessageIds.includes(m.reply_to_message?.message_id) || typeof m.text !== "string" || m.text.length > 2000) return null;
   const r = readReply(m.text);
-  return { kind: r.kind === "instruct" ? "guidance" : r.kind, original: m.text };
+  return { kind: r.kind === "instruct" ? "text" : r.kind, original: m.text };
 }
 
-export async function waitForDecision({ api, store, decision, onUpdate = () => {} }) {
+export async function waitForDecision({ api, store, decision, onUpdate = () => {}, interpret = interpretReply, reserve = () => true }) {
   let d = decision;
   const offsetFile = path.join(store.home, "telegram-offset.json");
   let offset = readJson(offsetFile, { offset: 0 }).offset;
+  let queued = [];
+  const priority = { stop: 0, deny: 1, text: 2, ambiguous: 3, prompt: 3, approve: 4 };
+  const save = () => store.save(d);
+  async function say(text) {
+    const m = await api.call("sendMessage", { chat_id: d.chat, text: `${text}\n\nDecision: ${d.id}. The original deadline is unchanged.`,
+      reply_markup: { force_reply: true, selective: true } }, Math.min(d.expiresAt, Date.now() + 5000));
+    d.replyMessageIds.push(m.message_id); save();
+  }
+  function finish(status) { d.status = status; save(); return d; }
+  function transportFailure(error, phase) { d.failure = { phase, detail: redact(error.message).replace(/https?:\/\/[^\s]+/g, "[URL]").slice(0, 160) }; return finish(Date.now() >= d.expiresAt ? "expired" : "transport_failed"); }
+  const vetoIn = (updates) => updates.find((u) => classifyUpdate(u, d)?.kind === "stop") || updates.find((u) => classifyUpdate(u, d)?.kind === "deny");
+  function honorVeto(veto) {
+    offset = Math.max(offset, veto.update_id + 1); writeJson(offsetFile, { offset });
+    const control = classifyUpdate(veto, d); d.seenUpdateIds.push(veto.update_id); save();
+    return store.resolve(d.id, d, control.original, control.kind) ?? store.get(d.id);
+  }
   while (d.status === "pending" && Date.now() < d.expiresAt) {
     let updates;
-    try { updates = await api.updates(offset, d.expiresAt); }
-    catch { d.status = Date.now() >= d.expiresAt ? "expired" : "transport_failed"; store.save(d); break; }
-    // A stop/rejection already present in the received batch wins over an approval.
-    // Guidance also blocks rather than dropping conditions when controls arrive together.
-    const priority = { stop: 0, deny: 1, guidance: 2, ambiguous: 3, prompt: 3, approve: 4 };
+    try { updates = queued.length ? queued.splice(0) : await api.updates(offset, d.expiresAt); }
+    catch (e) { return transportFailure(e, "updates"); }
+    if (!Array.isArray(updates)) return finish("transport_failed");
     updates.sort((a, b) => (priority[classifyUpdate(a, d)?.kind] ?? 99) - (priority[classifyUpdate(b, d)?.kind] ?? 99));
-    for (const update of updates) {
-      offset = Math.max(offset, update.update_id + 1);
-      writeJson(offsetFile, { offset }); // acknowledge before processing: a crash never replays an uncertain reply
+    for (let i = 0; i < updates.length; i++) {
+      const update = updates[i];
+      if (!Number.isSafeInteger(update.update_id)) continue;
+      offset = Math.max(offset, update.update_id + 1); writeJson(offsetFile, { offset });
       d = store.get(d.id);
       const reply = classifyUpdate(update, d);
       if (!reply) continue;
+      d.seenUpdateIds.push(update.update_id); d.seenUpdateIds = d.seenUpdateIds.slice(-64); save();
       if (reply.callbackId) await api.call("answerCallbackQuery", { callback_query_id: reply.callbackId, text: "Received for this decision." }, Math.min(d.expiresAt, Date.now() + 3000)).catch(() => {});
-      if (reply.kind === "prompt" || reply.kind === "ambiguous") {
-        if (reply.kind === "ambiguous") store.resolve(d.id, d, reply.original, "ambiguous");
-        const flag = reply.kind === "prompt" ? "guidancePrompted" : "clarified";
-        if (!d[flag]) {
-          d = store.get(d.id); d[flag] = true; store.save(d);
-          try {
-            const m = await api.call("sendMessage", { chat_id: d.chat,
-              text: `Decision ${d.id}: ${reply.kind === "ambiguous" ? "Did you mean guidance, reject, or stop? Approval requires the exact-action button." : "Dictate or type guidance here, then press Send. Conditions are preserved."}\nReply to this message. The original deadline is unchanged.`,
-              reply_markup: { force_reply: true, selective: true } }, Math.min(d.expiresAt, Date.now() + 5000));
-            d.replyMessageIds.push(m.message_id); store.save(d);
-          } catch { d.status = "delivery_failed"; store.save(d); }
+      // Explicit controls bypass all model interpretation and conversational turn limits.
+      if (["approve", "stop", "deny"].includes(reply.kind)) {
+        if (reply.kind === "approve") {
+          let latest;
+          try { latest = await api.updates(offset, Math.min(d.expiresAt, Date.now() + 5000), false); }
+          catch (e) { return transportFailure(e, "controls_before_approval"); }
+          if (!Array.isArray(latest)) return finish("transport_failed");
+          const veto = vetoIn([...updates.slice(i + 1), ...latest]);
+          if (veto) return honorVeto(veto);
+        }
+        d = store.resolve(d.id, d, reply.original, reply.kind) ?? store.get(d.id); onUpdate(d); return d;
+      }
+      if (reply.kind === "prompt") {
+        if (!d.guidancePrompted) {
+          d.guidancePrompted = true; save();
+          try { await say("Ask a question about the stored evidence, or dictate/type guidance. Inspect your words and press Send. Questions leave the action held; text never approves it."); }
+          catch { return finish("delivery_failed"); }
         }
         continue;
       }
-      d = store.resolve(d.id, d, reply.original, reply.kind) ?? store.get(d.id);
-      onUpdate(d);
-      if (d.status !== "pending") break;
+      if (d.userTurns >= MAX_USER_TURNS) return finish("conversation_limit");
+      d.userTurns++; save();
+      if (reply.kind === "ambiguous") {
+        d = store.resolve(d.id, d, reply.original, "ambiguous");
+        if (d.clarified) return finish("interpretation_unclear");
+        d.clarified = true; save();
+        try { await say("Did you mean a question, guidance, Reject, or Stop? Approval requires the exact-action button. The action remains held."); }
+        catch { return finish("delivery_failed"); }
+        continue;
+      }
+      if (d.modelRequests >= MAX_CONVERSATION_REQUESTS) return finish("conversation_limit");
+      if (Date.now() + 500 >= d.expiresAt) return finish("insufficient_time");
+      let interpretation;
+      try {
+        const result = await interpret({ original: reply.original, decision: d, deadline: Math.min(d.expiresAt - 500, Date.now() + 12000),
+          reserve(model) {
+            const current = store.validate(d.id, d);
+            if (!current || current.status !== "pending" || current.modelRequests >= MAX_CONVERSATION_REQUESTS || !reserve(model)) return false;
+            current.modelRequests++; d = store.save(current); return true;
+          } });
+        const { model, ...value } = result;
+        interpretation = { ...validateInterpretation(value, { original: reply.original, facts: d.evidence }), model: typeof model === "string" ? model : null };
+      } catch { return finish(Date.now() >= d.expiresAt ? "expired" : "interpretation_failed"); }
+      // Same consumer, non-blocking drain: a Stop/Reject received during Gemini wins before guidance can be relayed.
+      let extra;
+      try { extra = await api.updates(offset, Math.min(d.expiresAt, Date.now() + 5000), false); }
+      catch (e) { return transportFailure(e, "controls_after_interpretation"); }
+      if (!Array.isArray(extra)) return finish("transport_failed");
+      const pending = [...updates.slice(i + 1), ...extra];
+      const veto = vetoIn(pending);
+      if (veto) return honorVeto(veto);
+      const unique = new Map();
+      for (const u of pending) if (!d.seenUpdateIds.includes(u.update_id)) unique.set(u.update_id, u);
+      queued.push(...unique.values());
+      if (Date.now() >= d.expiresAt) return finish("expired");
+      const entry = { original: reply.original, kind: interpretation.kind, model: interpretation.model, at: Date.now() };
+      d.conversation.push(entry);
+      if (interpretation.kind === "question") {
+        entry.factIds = interpretation.fact_ids;
+        entry.reply = answerFromFacts(interpretation, d.evidence);
+        d.replies.push({ original: reply.original, interpreted: "question", at: Date.now() }); save();
+        try { await say(entry.reply); } catch { return finish("delivery_failed"); }
+      } else if (interpretation.kind === "clarify") {
+        d.replies.push({ original: reply.original, interpreted: "clarify", at: Date.now() });
+        if (d.clarified) return finish("interpretation_unclear");
+        d.clarified = true; entry.reply = clarificationFor(interpretation.clarification); save();
+        try { await say(`${entry.reply} The action remains held.`); } catch { return finish("delivery_failed"); }
+      } else {
+        entry.reply = acknowledgeGuidance(reply.original); d.acknowledgment = entry.reply; save();
+        // A failed acknowledgment is not a successful handoff.
+        try { await say(entry.reply); } catch { return finish("delivery_failed"); }
+        if (Date.now() >= d.expiresAt) return finish("expired");
+        let finalUpdates;
+        try { finalUpdates = await api.updates(offset, Math.min(d.expiresAt, Date.now() + 5000), false); }
+        catch (e) { return transportFailure(e, "controls_after_acknowledgment"); }
+        if (!Array.isArray(finalUpdates)) return finish("transport_failed");
+        const finalVeto = vetoIn([...queued, ...finalUpdates]);
+        if (finalVeto) return honorVeto(finalVeto);
+        if (Date.now() >= d.expiresAt) return finish("expired");
+        return store.resolve(d.id, d, reply.original, "guidance") ?? store.get(d.id);
+      }
+      break; // process queued new messages on the next loop, without a second consumer
     }
   }
-  if (d.status === "pending") { d.status = "expired"; store.save(d); }
-  return d;
+  return d.status === "pending" ? finish("expired") : d;
 }
 
-export async function escalateTelegram({ home, config, sid, tool, input, cwd, goal, history, tried, question, verdict, expiresAt, actionHash }) {
+export async function escalateTelegram({ home, config, sid, tool, input, cwd, goal, history, tried, question, verdict, expiresAt, actionHash, reserve }) {
   const release = acquireConsumer(home);
   const store = new DecisionStore(home);
   try {
     const briefing = briefingFor({ goal, question, tool, input, history, tried, verdict });
-    let d = store.create({ sid, actionHash, owner: config.owner, chat: config.chat, expiresAt, briefing: briefing.text, approvalEligible: briefing.approvalEligible });
+    let d = store.create({ sid, actionHash, owner: config.owner, chat: config.chat, expiresAt, briefing: briefing.text, approvalEligible: briefing.approvalEligible, evidence: evidenceFor({ goal, tool, input, history, tried, verdict }) });
     const api = new Telegram(config.token);
     d = await notifyDecision(api, store, d);
-    let result = d.status === "pending" ? await waitForDecision({ api, store, decision: d }) : d;
+    let result = d.status === "pending" ? await waitForDecision({ api, store, decision: d, reserve }) : d;
     let approved = result.status === "approved" && fingerprint({ sid, tool, input, cwd }) === actionHash &&
       store.consume(result.id, { sid, actionHash, owner: config.owner, chat: config.chat });
     result = store.get(result.id);

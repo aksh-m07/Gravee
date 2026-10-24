@@ -2,9 +2,9 @@
 
 **The night guard that knows when your AI agent has stopped making progress.**
 
-The primary product supervises **Claude Code in a terminal**. Existing hooks detect repeated failures and loops, Gemini diagnoses and can redirect, and decisions needing the owner are held while a private Telegram briefing asks for guidance. Dictated or typed text preserves conditions; consequential approval requires an exact-action inline button consumed once. Silence leaves the action blocked.
+The primary product supervises **Claude Code in a terminal**. Existing hooks detect repeated failures and loops, Gemini diagnoses and can redirect, and decisions needing the owner are held while a private Telegram briefing asks for guidance. The owner can ask questions answered only from stored evidence, then send dictated or typed guidance whose original conditions are preserved. Consequential approval requires an exact-action inline button consumed once. Questions keep the action held; silence leaves it blocked.
 
-Start with the [terminal setup and verification limits](guard/README.md). Live Telegram and a Gemini diagnosis through the hook have been verified with an explicit test caller. **An authenticated Claude session is still blocked on this Mac by missing account access, and Voiskey use is unverified.**
+Start with the [terminal setup and verification limits](guard/README.md) or the [authenticated teammate test checklist](guard/TEAMMATE_TEST.md). Live Telegram and a Gemini diagnosis through the hook have been verified with an explicit test caller. **An authenticated Claude session is still blocked on this Mac by missing account access, and Voiskey use is unverified.**
 
 The existing browser sandbox below remains a verified secondary baseline: it tracks observable requirements, validates recovery proposals, and checks their results. Its shop and worker are simulated/scripted.
 

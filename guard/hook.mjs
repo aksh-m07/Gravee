@@ -23,12 +23,12 @@ const pre = (decision, reason) => out({ hookSpecificOutput: { hookEventName: "Pr
 const hold = (reason) => out({ continue: false, stopReason: reason, hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason } });
 
 /** No resume API: this hook remains alive while the exact tool call waits. */
-async function askBoss(sid, question, { tool, input, history, tried, verdict, goal, cwd }) {
+async function askBoss(sid, question, { tool, input, history, tried, verdict, goal, cwd, reserve }) {
   const config = telegramConfig();
   if (!config) return { halt: true, reason: "Graveyard Shift: Telegram owner is not configured. The action did not run. Configure guard/.env.local and pair the owner, then issue a new prompt in Claude Code." };
   const actionHash = fingerprint({ sid, tool, input, cwd });
-  const { result, approved } = await escalateTelegram({ home: HOME, config, sid, tool, input, cwd, goal, history, tried, question, verdict, actionHash, expiresAt: Date.now() + replyWaitMs() });
-  log({ sid, event: "telegram_decision", decision: result.id, status: result.status, consumed: approved, actionHash });
+  const { result, approved } = await escalateTelegram({ home: HOME, config, sid, tool, input, cwd, goal, history, tried, question, verdict, actionHash, reserve, expiresAt: Date.now() + replyWaitMs() });
+  log({ sid, event: "telegram_decision", decision: result.id, status: result.status, consumed: approved, actionHash, conversationRequests: result.modelRequests, userTurns: result.userTurns, models: result.conversation.map((t) => t.model).filter(Boolean) });
   if (approved) return { decision: "allow", reason: `Graveyard Shift: owner approved this exact action once (decision ${result.id}, ${actionHash}). Approval consumed before returning to Claude.` };
   if (result.status === "guidance") return { decision: "deny", reason: `Graveyard Shift: this action is blocked. The owner's original guidance follows verbatim; preserve every condition and do not treat it as approval: ${result.originalReply}` };
   if (result.status === "deny") return { decision: "deny", reason: `Graveyard Shift: the owner rejected this exact action. It must not execute. Original reply: ${result.originalReply}. No alternative consequential action has been approved.` };
@@ -78,7 +78,8 @@ async function main() {
     const tool = ev.tool_name, input = ev.tool_input ?? {};
     const proposed = summaryOf(tool, input);
     if (s.stopped) { hold("Graveyard Shift: session stopped by owner; held action cannot execute. Begin a new user prompt with Resume to continue."); return; }
-    const ask = (question, verdict) => askBoss(sid, question, { tool, input, history: s.history, tried: s.interventions, goal: s.goal, cwd: ev.cwd, verdict });
+    const reserve = (model) => { if (s.consults >= MAX_CONSULTS) return false; s.consults++; save(sid, s); log({ sid, event: "gemini_attempt", model, attempt: s.consults }); return true; };
+    const ask = (question, verdict) => askBoss(sid, question, { tool, input, history: s.history, tried: s.interventions, goal: s.goal, cwd: ev.cwd, verdict, reserve });
 
     // 1. Irreversible or outward-facing: always the human's call. No model can wave it through.
     const risk = riskOf(tool, input);
@@ -98,7 +99,7 @@ async function main() {
     if (s.consults < MAX_CONSULTS) {
       try {
         const g = await assess({ key: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY, goal: s.goal, history: s.history, proposed, flags,
-          reserve(model) { if (s.consults >= MAX_CONSULTS) return false; s.consults++; save(sid, s); log({ sid, event: "gemini_attempt", model, attempt: s.consults }); return true; },
+          reserve,
         });
         log({ sid, event: g.decision, source: "gemini", model: g.model, proposed, flags, diagnosis: g.diagnosis });
         s.interventions.push({ kind: `Gemini ${g.decision}`, detail: g.advice || g.diagnosis }); s.interventions = s.interventions.slice(-8); save(sid, s);

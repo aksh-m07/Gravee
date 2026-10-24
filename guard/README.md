@@ -2,7 +2,7 @@
 
 The primary product is supervision of Claude Code on a coding project. Existing tool-event hooks detect repeated failures, loops and unverified completion. Gemini diagnoses a detected failure and can redirect the agent. Decisions needing the owner go to one private Telegram account while the synchronous hook holds the exact tool call.
 
-**Current verification:** live private Telegram delivery/replies, one-use approval to a fake local Git remote, Stop and silence were exercised through an explicit hook test caller. One real Gemini diagnosis ran through the hook using synthetic events. **An authenticated Claude Code session has not been tested on this Mac:** Claude Code 2.1.310 is installed locally but reports `Not logged in`; the user does not have a Claude subscription. Typed Telegram guidance worked. Actual Voiskey use is not verified. The installed unauthenticated CLI did load UserPromptSubmit and blocked a new prompt for the stopped test session with zero API requests; that does not verify native PreToolUse execution or continuation. Do not describe the hook test caller as Claude Code.
+**Current verification:** live private Telegram delivery/replies, one-use approval to a fake local Git remote, Stop and silence were exercised through an explicit hook test caller. One real Gemini diagnosis ran through the hook using synthetic events. **An authenticated Claude Code session has not been tested on this Mac:** Claude Code 2.1.310 is installed locally but reports `Not logged in`; the user does not have a Claude subscription. A real two-turn typed Telegram conversation passed with two Gemini requests using `gemini-3.6-flash`, synthetic evidence and an explicit caller. Original multi-clause guidance was preserved. Actual Voiskey use is not verified. The installed unauthenticated CLI did load UserPromptSubmit and blocked a new prompt for the stopped test session with zero API requests; that does not verify native PreToolUse execution or continuation. Do not describe the hook test caller as Claude Code.
 
 ## Local setup
 
@@ -55,7 +55,7 @@ The terminal hook has no voice, iMessage or phone notification imports. Those le
 
 Telegram shows the task, held action, reason, recent failure evidence, previous supervisor interventions, a specific question, options, a decision ID and the silence default. Known secrets are redacted. No full source files are attached. Remote approval is disabled when a Bash command cannot be shown completely and without redaction, and for non-Bash actions whose complete edit cannot be safely shown.
 
-- **Reply with guidance:** opens Telegram's reply composer. Dictate with Voiskey or type, then explicitly press Send. The backend receives the text Telegram sends; no Voiskey API or transcription service is used. Replies must target this decision's bot message. Unrelated chat text is ignored.
+- **Ask or give guidance:** opens Telegram's reply composer. Dictate with Voiskey or type, then explicitly press Send. The backend receives the text Telegram sends; no Voiskey API or transcription service is used. Replies must target this decision's bot message. Unrelated chat text is ignored.
 - **Conditions:** `Yes if the tests pass`, `Use a new branch instead`, and `Use the newer file but preserve the original` become verbatim blocked-tool guidance, never approval. No condition is converted into an automated permission to execute later.
 - **Ambiguity:** free-form `yes` never approves. The bot asks one short clarification and holds the action under the original absolute deadline. Opening the guidance composer does not use up that clarification.
 - **Approve this action once:** only the inline button can approve. The owner, private chat, message, session, decision and SHA-256 fingerprint of the complete tool input/cwd must match. The approval is persisted as consumed before the hook returns `allow`, and cannot be reused. Expiry and fingerprint are rechecked after the final network wait; a consumed approval that fails that check stays spent and does not authorize execution.
@@ -63,6 +63,27 @@ Telegram shows the task, held action, reason, recent failure evidence, previous 
 - **Stop task:** persists a separate session veto, denies the held action and returns `continue: false`. Later tool calls in that same session are blocked. A new user prompt beginning `Resume` deliberately clears that veto. This ends a Claude turn; it does not kill the OS process, cancel actions already dispatched, or stop every other Claude session.
 
 When Stop/rejection and approval are already in the same received update batch, Stop/rejection wins, regardless of ordering. Guidance also wins over approval in that batch, preserving conditions. Controls arriving after an approval has been consumed cannot revoke an already dispatched action.
+
+## Bounded questions and guidance
+
+While one action is held, the owner can ask a question before sending guidance. The same Telegram consumer and decision binding handle both. A question is recorded without resolving/consuming the decision; the next reply still targets that same action.
+
+Gemini returns a strict `question`, `guidance` or `clarify` structure. It cannot approve or dispatch tools. For questions it selects IDs from a sanitized, stored evidence snapshot (task, recent tool results/failures, proposed action, supervisor interventions and verification/edit-event coverage). The phone answer quotes only those selected facts. Missing evidence is admitted; the absence of edit events is explicitly **not proof that files are unchanged**, and no independent filesystem diff or Claude cost ledger is claimed.
+
+For high-confidence guidance, the acknowledgment quotes the original human text rather than substituting a model paraphrase. The original instructions remain authoritative in Claude's blocked-tool explanation, including negations, conditions, rejected approaches and file restrictions. This is instruction relay, **not independent enforcement of every restriction**. A question that the model misclassifies as guidance receives a clarification instead of releasing the hold.
+
+Defaults are **three user text turns and two actual conversational Gemini requests** per decision, no retries/fallbacks. Opening the composer is not a user text turn. One ambiguity/conflict clarification is allowed. Diagnosis requests retain their separate bounded path, but both diagnosis and conversation dispatches count against the persisted 12-request supervisor session cap. Every conversational attempt is reserved before sending and the same 1,536-token/minimal-thinking settings are reused.
+
+The original absolute decision deadline never restarts after an answer. Model unavailability, malformed output, missing credentials, exhausted conversation budget, delivery failure, unresolved interpretation or expiry blocks the action and ends the turn using the existing hook mechanism. Stop/Reject/approval controls bypass Gemini; authorized Stop/Reject received during interpretation or acknowledgment are checked by the same consumer before guidance is relayed. These controls cannot revoke an already dispatched action.
+
+```bash
+env -u GEMINI_API_KEY -u GOOGLE_API_KEY node --test guard/test/*.test.mjs
+node guard/smoke-conversation.mjs
+```
+
+The live smoke command uses **synthetic hook evidence**, real Telegram/Gemini and an explicit test caller. No Claude session or tool runs. First ask a question; after its answer, reply with one complete multi-clause instruction. Use actual Voiskey's configured keyboard/dictation control if available, inspect the result and press Send manually. The backend cannot identify which input method produced the text; typed fallback is recorded separately. A failed/expired manual test is not a completed conversation.
+
+For an authenticated teammate's safe worktree, single-machine bot handoff, local hooks, real coding task and cleanup, use [TEAMMATE_TEST.md](TEAMMATE_TEST.md). Do not run a separate Telegram polling worker alongside Claude: the synchronous hook is its only consumer while waiting. Local locks do not coordinate different machines.
 
 ## Hold, timeout and restart limits
 
@@ -93,7 +114,7 @@ This feeds synthetic repeated-failure events through the real hook and permits o
 ## Checks and manual demonstrations
 
 ```bash
-node --test guard/test/*.test.mjs
+env -u GEMINI_API_KEY -u GOOGLE_API_KEY node --test guard/test/*.test.mjs
 node guard/telegram.mjs test
 ```
 

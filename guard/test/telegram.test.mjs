@@ -20,6 +20,7 @@ function setup(expiresAt = Date.now() + 5000) {
 }
 const callback = (d, action = "a", overrides = {}) => ({ update_id: 1, callback_query: { id: "callback", from: { id: 123 }, message: { chat: { id: 123, type: "private" }, message_id: 10 }, data: `gs:${action}:${d.id}`, ...overrides } });
 const message = (text, replyTo = 10) => ({ update_id: 2, message: { from: { id: 123 }, chat: { id: 123, type: "private" }, text, reply_to_message: { message_id: replyTo } } });
+const mockGuidance = async ({ reserve }) => { reserve("mock-gemini"); return { kind: "guidance", confidence: "high", fact_ids: [], clarification: "none", model: "mock-gemini" }; };
 
 test("all conditional replies preserve original text and never approve", () => {
   for (const text of ["Yes if the tests pass.", "Yes, after I review the changes.", "Use the newer file but preserve the original.", "Use a new branch instead.", "Don't stop; preserve the original.", "Stop if the tests fail."]) {
@@ -116,12 +117,12 @@ test("one clarification preserves deadline; conditional dictated guidance is per
   const { store, d } = setup();
   let polls = 0; let clarifications = 0;
   const api = {
-    updates: async () => polls++ === 0 ? [message("yes")] : [{ ...message("Yes if the tests pass.", 77), update_id: 3 }],
+    updates: async (_offset, _deadline, wait = true) => !wait ? [] : polls++ === 0 ? [message("yes")] : [{ ...message("Yes if the tests pass.", 77), update_id: 3 }],
     call: async () => { clarifications++; return { message_id: 77 }; },
   };
-  const result = await waitForDecision({ api, store, decision: d });
+  const result = await waitForDecision({ api, store, decision: d, interpret: mockGuidance });
   assert.equal(result.status, "guidance"); assert.equal(result.originalReply, "Yes if the tests pass.");
-  assert.equal(result.expiresAt, d.expiresAt); assert.equal(clarifications, 1);
+  assert.equal(result.expiresAt, d.expiresAt); assert.equal(clarifications, 2); // one clarification + verbatim acknowledgment
   assert.equal(result.replies[0].interpreted, "ambiguous"); assert.equal(result.replies[1].interpreted, "guidance");
   assert.equal(new DecisionStore(store.home).get(d.id).originalReply, "Yes if the tests pass.");
   assert.equal(store.consume(d.id, scope), false);
@@ -130,10 +131,10 @@ test("one clarification preserves deadline; conditional dictated guidance is per
 test("opening guidance composer still permits one ambiguity clarification, without extending expiry", async () => {
   const { store, d } = setup();
   let polls = 0; let prompts = 0;
-  const api = { updates: async () => [[callback(d, "g")], [{ ...message("yes", 77), update_id: 2 }], [{ ...message("Use a new branch instead", 78), update_id: 3 }]][polls++],
+  const api = { updates: async (_offset, _deadline, wait = true) => !wait ? [] : [[callback(d, "g")], [{ ...message("yes", 77), update_id: 2 }], [{ ...message("Use a new branch instead", 78), update_id: 3 }]][polls++],
     call: async (method) => method === "sendMessage" ? { message_id: 77 + prompts++ } : true };
-  const result = await waitForDecision({ api, store, decision: d });
-  assert.equal(result.status, "guidance"); assert.equal(result.expiresAt, d.expiresAt); assert.equal(prompts, 2);
+  const result = await waitForDecision({ api, store, decision: d, interpret: mockGuidance });
+  assert.equal(result.status, "guidance"); assert.equal(result.expiresAt, d.expiresAt); assert.equal(prompts, 3);
   assert.equal(result.clarified, true); assert.equal(result.guidancePrompted, true);
 });
 
