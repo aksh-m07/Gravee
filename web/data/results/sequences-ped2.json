@@ -1,0 +1,91 @@
+{
+ "dataset": "/Users/akshmalik/graveyard-shift/web/data/seq-ped2",
+ "trainSequences": 16,
+ "testSequences": 12,
+ "testFrames": 2010,
+ "window": 1,
+ "threshold": 7.877476368917031,
+ "anomalousFrames": 1648,
+ "frameAucModel": 0.8210554899962452,
+ "frameAucMotionBaseline": 0.7781531607037494,
+ "sequenceAucModel": null,
+ "sequenceAucMotionBaseline": null,
+ "segments": 12,
+ "segmentsDetected": 8,
+ "medianDelayFrames": 36,
+ "falseAlarmRateOnNormalFrames": 0,
+ "perSequence": [
+  {
+   "seq": "Test001",
+   "frames": 180,
+   "maxScore": 8.141398986954774,
+   "alarmFrames": 6
+  },
+  {
+   "seq": "Test002",
+   "frames": 180,
+   "maxScore": 8.440794254434705,
+   "alarmFrames": 8
+  },
+  {
+   "seq": "Test003",
+   "frames": 150,
+   "maxScore": 8.770211416974355,
+   "alarmFrames": 32
+  },
+  {
+   "seq": "Test004",
+   "frames": 180,
+   "maxScore": 23.92103527631219,
+   "alarmFrames": 134
+  },
+  {
+   "seq": "Test005",
+   "frames": 150,
+   "maxScore": 9.704820492633376,
+   "alarmFrames": 16
+  },
+  {
+   "seq": "Test006",
+   "frames": 180,
+   "maxScore": 8.389059638777068,
+   "alarmFrames": 11
+  },
+  {
+   "seq": "Test007",
+   "frames": 180,
+   "maxScore": 11.177032807616708,
+   "alarmFrames": 111
+  },
+  {
+   "seq": "Test008",
+   "frames": 180,
+   "maxScore": 9.393925573737567,
+   "alarmFrames": 48
+  },
+  {
+   "seq": "Test009",
+   "frames": 120,
+   "maxScore": 7.05207121753532,
+   "alarmFrames": 0
+  },
+  {
+   "seq": "Test010",
+   "frames": 150,
+   "maxScore": 6.152402114188369,
+   "alarmFrames": 0
+  },
+  {
+   "seq": "Test011",
+   "frames": 180,
+   "maxScore": 6.936591975922252,
+   "alarmFrames": 0
+  },
+  {
+   "seq": "Test012",
+   "frames": 180,
+   "maxScore": 7.569832875135379,
+   "alarmFrames": 0
+  }
+ ]
+}

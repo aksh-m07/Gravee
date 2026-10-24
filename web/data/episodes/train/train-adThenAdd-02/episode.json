@@ -1,0 +1,47 @@
+{
+ "id": "train-adThenAdd-02",
+ "split": "train",
+ "scenario": "adThenAdd",
+ "task": "Add the Dot Grid Notebook to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Close"
+   },
+   "note": "A promo overlay is covering the page. Close it."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Dot Grid Notebook"
+   },
+   "note": "Open the Dot Grid Notebook page."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Dot Grid Notebook to the cart."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The Dot Grid Notebook is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

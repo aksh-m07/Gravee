@@ -1,0 +1,65 @@
+{
+ "id": "train-addToCart-06",
+ "split": "train",
+ "scenario": "addToCart",
+ "task": "Add the Mechanical Keyboard to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "type",
+    "label": "Search products"
+   },
+   "note": "Search for Mechanical Keyboard."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Search"
+   },
+   "note": "Run the search for Mechanical Keyboard."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Mechanical Keyboard"
+   },
+   "note": "Open the Mechanical Keyboard page."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Mechanical Keyboard to the cart."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Check the cart contents."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The Mechanical Keyboard is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

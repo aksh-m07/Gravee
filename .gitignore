@@ -1,0 +1,32 @@
+data/raw
+web/.env*
+!web/.env.example
+node_modules
+.next
+.vercel
+*.log
+data/tmp
+data/cache
+data/ped-png
+web/data/runs*
+web/data/results-ped.log
+
+# generated locally
+web/data/cache/gate-model.json
+web/data/tmp/
+web/data/models/
+web/data/seq-ped2/
+track1/.venv/
+track1/data/
+track1/*.zip
+track1/*.pt
+track1/.gdrive_download/
+demo-remote.git/
+demo-project/
+track1/features/
+track1/*.npz
+track1/*.npy
+
+# Large generated feature datasets
+track1/features/resnet18_224/train.npz
+track1/features/resnet18_224/test.npz

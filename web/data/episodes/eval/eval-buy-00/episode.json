@@ -1,0 +1,65 @@
+{
+ "id": "eval-buy-00",
+ "split": "eval",
+ "scenario": "buy",
+ "task": "Buy the Dot Grid Notebook using the saved payment method.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Dot Grid Notebook"
+   },
+   "note": "Open the Dot Grid Notebook page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Dot Grid Notebook to the cart."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Open the cart."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Proceed to checkout"
+   },
+   "note": "Go to checkout."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Confirm purchase $9.25"
+   },
+   "note": "The task is to buy it, so confirm the purchase."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "Order placed. Task complete."
+  }
+ ],
+ "seeded": true
+}

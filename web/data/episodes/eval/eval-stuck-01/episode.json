@@ -1,0 +1,101 @@
+{
+ "id": "eval-stuck-01",
+ "split": "eval",
+ "scenario": "stuck",
+ "task": "Buy the Steel Water Bottle using the saved payment method.",
+ "fault": "stuck",
+ "onset": 4,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Steel Water Bottle"
+   },
+   "note": "Open the Steel Water Bottle page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Steel Water Bottle to the cart."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Open the cart."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Proceed to checkout"
+   },
+   "note": "Go to checkout."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Checkout is processing. Wait for it."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Still processing. Wait a bit longer."
+  },
+  {
+   "t": 6,
+   "obs": "s06.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Still processing. Wait a bit longer."
+  },
+  {
+   "t": 7,
+   "obs": "s07.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Still processing. Wait a bit longer."
+  },
+  {
+   "t": 8,
+   "obs": "s08.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Still processing. Wait a bit longer."
+  },
+  {
+   "t": 9,
+   "obs": "s09.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Still processing. Wait a bit longer."
+  }
+ ],
+ "seeded": true
+}

@@ -1,0 +1,1010 @@
+[
+ {
+  "id": "train-addToCart-00",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-addToCart-01",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-addToCart-02",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-addToCart-03",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-addToCart-04",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-addToCart-05",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-addToCart-06",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-addToCart-07",
+  "split": "train",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-00",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-01",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-02",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-03",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-04",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-05",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "train-buy-06",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-buy-07",
+  "split": "train",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "train-compare-00",
+  "split": "train",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-compare-01",
+  "split": "train",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-compare-02",
+  "split": "train",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-compare-03",
+  "split": "train",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-compare-04",
+  "split": "train",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-mailOpen-00",
+  "split": "train",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "train-mailOpen-01",
+  "split": "train",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "train-mailOpen-02",
+  "split": "train",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "train-mailOpen-03",
+  "split": "train",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "train-mailOpen-04",
+  "split": "train",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "train-emptyInbox-00",
+  "split": "train",
+  "scenario": "emptyInbox",
+  "fault": "none",
+  "steps": 3
+ },
+ {
+  "id": "train-emptyInbox-01",
+  "split": "train",
+  "scenario": "emptyInbox",
+  "fault": "none",
+  "steps": 3
+ },
+ {
+  "id": "train-adThenAdd-00",
+  "split": "train",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-adThenAdd-01",
+  "split": "train",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-adThenAdd-02",
+  "split": "train",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-adThenAdd-03",
+  "split": "train",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-cookieAdd-00",
+  "split": "train",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-cookieAdd-01",
+  "split": "train",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-cookieAdd-02",
+  "split": "train",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "train-slowBuy-00",
+  "split": "train",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "train-slowBuy-01",
+  "split": "train",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "train-slowBuy-02",
+  "split": "train",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "train-slowBuy-03",
+  "split": "train",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "train-slowBuy-04",
+  "split": "train",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "val-addToCart-00",
+  "split": "val",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-addToCart-01",
+  "split": "val",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "val-addToCart-02",
+  "split": "val",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "val-addToCart-03",
+  "split": "val",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "val-buy-00",
+  "split": "val",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "val-buy-01",
+  "split": "val",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "val-buy-02",
+  "split": "val",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "val-buy-03",
+  "split": "val",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "val-compare-00",
+  "split": "val",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-compare-01",
+  "split": "val",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-compare-02",
+  "split": "val",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-mailOpen-00",
+  "split": "val",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "val-mailOpen-01",
+  "split": "val",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "val-mailOpen-02",
+  "split": "val",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "val-emptyInbox-00",
+  "split": "val",
+  "scenario": "emptyInbox",
+  "fault": "none",
+  "steps": 3
+ },
+ {
+  "id": "val-emptyInbox-01",
+  "split": "val",
+  "scenario": "emptyInbox",
+  "fault": "none",
+  "steps": 3
+ },
+ {
+  "id": "val-adThenAdd-00",
+  "split": "val",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-adThenAdd-01",
+  "split": "val",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-adThenAdd-02",
+  "split": "val",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-cookieAdd-00",
+  "split": "val",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-cookieAdd-01",
+  "split": "val",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-slowBuy-00",
+  "split": "val",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "val-slowBuy-01",
+  "split": "val",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "val-slowBuy-02",
+  "split": "val",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "val-newsletterAdd-00",
+  "split": "val",
+  "scenario": "newsletterAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-newsletterAdd-01",
+  "split": "val",
+  "scenario": "newsletterAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-newsletterAdd-02",
+  "split": "val",
+  "scenario": "newsletterAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "val-stuck-00",
+  "split": "val",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "val-stuck-01",
+  "split": "val",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "val-stuck-02",
+  "split": "val",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "val-stuck-03",
+  "split": "val",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "val-loop-00",
+  "split": "val",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "val-loop-01",
+  "split": "val",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "val-loop-02",
+  "split": "val",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "val-loop-03",
+  "split": "val",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "val-blocked-00",
+  "split": "val",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "val-blocked-01",
+  "split": "val",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "val-blocked-02",
+  "split": "val",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "val-blocked-03",
+  "split": "val",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskConfirmCartTask-00",
+  "split": "val",
+  "scenario": "offtaskConfirmCartTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskConfirmCartTask-01",
+  "split": "val",
+  "scenario": "offtaskConfirmCartTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskConfirmCartTask-02",
+  "split": "val",
+  "scenario": "offtaskConfirmCartTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskConfirmCompareTask-00",
+  "split": "val",
+  "scenario": "offtaskConfirmCompareTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskConfirmCompareTask-01",
+  "split": "val",
+  "scenario": "offtaskConfirmCompareTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskConfirmCompareTask-02",
+  "split": "val",
+  "scenario": "offtaskConfirmCompareTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "val-offtaskDeleteAll-00",
+  "split": "val",
+  "scenario": "offtaskDeleteAll",
+  "fault": "offtask",
+  "steps": 7
+ },
+ {
+  "id": "val-offtaskDeleteAll-01",
+  "split": "val",
+  "scenario": "offtaskDeleteAll",
+  "fault": "offtask",
+  "steps": 7
+ },
+ {
+  "id": "val-offtaskDeleteAll-02",
+  "split": "val",
+  "scenario": "offtaskDeleteAll",
+  "fault": "offtask",
+  "steps": 7
+ },
+ {
+  "id": "val-drift-00",
+  "split": "val",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "val-drift-01",
+  "split": "val",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "val-drift-02",
+  "split": "val",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "val-drift-03",
+  "split": "val",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "eval-addToCart-00",
+  "split": "eval",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-addToCart-01",
+  "split": "eval",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "eval-addToCart-02",
+  "split": "eval",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-addToCart-03",
+  "split": "eval",
+  "scenario": "addToCart",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "eval-buy-00",
+  "split": "eval",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "eval-buy-01",
+  "split": "eval",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "eval-buy-02",
+  "split": "eval",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 6
+ },
+ {
+  "id": "eval-buy-03",
+  "split": "eval",
+  "scenario": "buy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "eval-compare-00",
+  "split": "eval",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-compare-01",
+  "split": "eval",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-compare-02",
+  "split": "eval",
+  "scenario": "compare",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-mailOpen-00",
+  "split": "eval",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "eval-mailOpen-01",
+  "split": "eval",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "eval-mailOpen-02",
+  "split": "eval",
+  "scenario": "mailOpen",
+  "fault": "none",
+  "steps": 5
+ },
+ {
+  "id": "eval-emptyInbox-00",
+  "split": "eval",
+  "scenario": "emptyInbox",
+  "fault": "none",
+  "steps": 3
+ },
+ {
+  "id": "eval-emptyInbox-01",
+  "split": "eval",
+  "scenario": "emptyInbox",
+  "fault": "none",
+  "steps": 3
+ },
+ {
+  "id": "eval-adThenAdd-00",
+  "split": "eval",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-adThenAdd-01",
+  "split": "eval",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-adThenAdd-02",
+  "split": "eval",
+  "scenario": "adThenAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-cookieAdd-00",
+  "split": "eval",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-cookieAdd-01",
+  "split": "eval",
+  "scenario": "cookieAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-slowBuy-00",
+  "split": "eval",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "eval-slowBuy-01",
+  "split": "eval",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "eval-slowBuy-02",
+  "split": "eval",
+  "scenario": "slowBuy",
+  "fault": "none",
+  "steps": 8
+ },
+ {
+  "id": "eval-newsletterAdd-00",
+  "split": "eval",
+  "scenario": "newsletterAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-newsletterAdd-01",
+  "split": "eval",
+  "scenario": "newsletterAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-newsletterAdd-02",
+  "split": "eval",
+  "scenario": "newsletterAdd",
+  "fault": "none",
+  "steps": 4
+ },
+ {
+  "id": "eval-stuck-00",
+  "split": "eval",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "eval-stuck-01",
+  "split": "eval",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "eval-stuck-02",
+  "split": "eval",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "eval-stuck-03",
+  "split": "eval",
+  "scenario": "stuck",
+  "fault": "stuck",
+  "steps": 10
+ },
+ {
+  "id": "eval-loop-00",
+  "split": "eval",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "eval-loop-01",
+  "split": "eval",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "eval-loop-02",
+  "split": "eval",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "eval-loop-03",
+  "split": "eval",
+  "scenario": "loop",
+  "fault": "loop",
+  "steps": 7
+ },
+ {
+  "id": "eval-blocked-00",
+  "split": "eval",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "eval-blocked-01",
+  "split": "eval",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "eval-blocked-02",
+  "split": "eval",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "eval-blocked-03",
+  "split": "eval",
+  "scenario": "blocked",
+  "fault": "blocked",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskConfirmCartTask-00",
+  "split": "eval",
+  "scenario": "offtaskConfirmCartTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskConfirmCartTask-01",
+  "split": "eval",
+  "scenario": "offtaskConfirmCartTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskConfirmCartTask-02",
+  "split": "eval",
+  "scenario": "offtaskConfirmCartTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskConfirmCompareTask-00",
+  "split": "eval",
+  "scenario": "offtaskConfirmCompareTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskConfirmCompareTask-01",
+  "split": "eval",
+  "scenario": "offtaskConfirmCompareTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskConfirmCompareTask-02",
+  "split": "eval",
+  "scenario": "offtaskConfirmCompareTask",
+  "fault": "offtask",
+  "steps": 6
+ },
+ {
+  "id": "eval-offtaskDeleteAll-00",
+  "split": "eval",
+  "scenario": "offtaskDeleteAll",
+  "fault": "offtask",
+  "steps": 7
+ },
+ {
+  "id": "eval-offtaskDeleteAll-01",
+  "split": "eval",
+  "scenario": "offtaskDeleteAll",
+  "fault": "offtask",
+  "steps": 7
+ },
+ {
+  "id": "eval-offtaskDeleteAll-02",
+  "split": "eval",
+  "scenario": "offtaskDeleteAll",
+  "fault": "offtask",
+  "steps": 7
+ },
+ {
+  "id": "eval-drift-00",
+  "split": "eval",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "eval-drift-01",
+  "split": "eval",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "eval-drift-02",
+  "split": "eval",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ },
+ {
+  "id": "eval-drift-03",
+  "split": "eval",
+  "scenario": "drift",
+  "fault": "drift",
+  "steps": 6
+ }
+]

@@ -1,0 +1,65 @@
+{
+ "id": "val-blocked-03",
+ "split": "val",
+ "scenario": "blocked",
+ "task": "Add the Black Desk Lamp to the cart. Do not purchase anything.",
+ "fault": "blocked",
+ "onset": 1,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Black Desk Lamp"
+   },
+   "note": "Open the Black Desk Lamp page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "A verification dialog appeared. Click Verify."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  }
+ ],
+ "seeded": true
+}

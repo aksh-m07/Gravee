@@ -1,0 +1,135 @@
+# HACKATHON_STATE.md
+
+Source of truth. Read first on resume. Update after every milestone.
+Last updated: Sat 2026-10-24 (delegate mode added).
+
+## Deadlines
+| Event | Deadline | Source |
+|---|---|---|
+| TESC (FNAF theme) | **Sat Oct 24, 4:00 PM PDT** ("4 PM max"; user confirmed the day) | user |
+| c0mpiled-16 UCSD | **Sat Oct 24, 7:30 PM PDT**. Building starts 2:00 PM on site. | Verified: luma.com/compiled-im3b, fetched 2026-10-23 |
+
+Plan: TESC package submitted by about 3 PM; the rest of the afternoon goes to c0mpiled. Team: solo (user confirmed Oct 24).
+Pre-building: user says both organizers confirmed it is allowed with no disclosure. Not independently verified. If a judge asks, answer truthfully.
+Rubric: not published for either event. Assumed: execution, originality, impact, presentation.
+
+## Product (current framing, from the user's master prompt)
+**Graveyard Shift: the night guard that knows when your AI agent has stopped making progress.**
+It protects task completion, not tool execution: tracks the task as verifiable requirements, intercepts the next action before it runs, uses Gemini to diagnose a stall and propose a bounded recovery, validates the proposal deterministically, runs it, and verifies the result.
+
+**Delegate mode (added Oct 24):** the guard acts for the boss and calls only when confused. Standing orders (`Mandate`: `delegate` or `ask_first`); money, sending and deleting are never delegated in either mode (hard policy, not a setting). Every call to the boss is an `ASK_HUMAN` with a `Briefing` (what is done, what is open, what was tried, options, what happens on silence = keep stopped) and exactly one reason: no_safe_action, low_confidence, irreversible, model_unavailable, ask_first.
+
+Decisions: ALLOW, BLOCK, RECOVER, ASK_HUMAN, STOP. A blocked action never reaches the executor.
+Gemini proposes. The guard decides. Hard policies (irreversible action, premature "done" claim, step budget, recovery allowlist and budget) cannot be overridden by any model output.
+
+## Tracks claimed
+| Event | Track | Claim | Why |
+|---|---|---|---|
+| c0mpiled | Unsupervised | Core | stuck/looping/overspending agents and knowing when to stop: governor, stall detection, bounded recovery, safe stop |
+| c0mpiled | No App | Only if voice/phone is actually working | Not yet built. Do not claim until a real call or voice flow works end to end |
+| TESC | ML anomaly detection on image sequences (Track 1: "Analyze a dataset of image sequences and build a ML model to detect anomalies before it's too late, and survive the night!") | Core | kNN normal-progress model over screenshot sequences; Ped2 AUC on a public dataset |
+| TESC | Google Gemini | Core | assessment + recovery planning with screenshot and structured output; ablation vs the same guard without Gemini (needs the API key) |
+| TESC | Voiskey voice product | Dropped (user decision, Oct 24) | Not claimed. No integration exists. |
+| TESC | SpaceX GrokBots | Skipped | |
+
+The user said they sent TESC track photos. They never arrived. The track list above is from their typed message.
+
+## Status (only what a check proved)
+| Item | Status | Verified by |
+|---|---|---|
+| Sandbox world + faults (price wall, unknown pop-up, save error, compare page, sheet) | built | Playwright runs; world renders; unit test keeps the catalog mirror in sync |
+| Goal model (requirements, evidence, verifiers) | built | 14 tests in tests/goal.test.ts |
+| Learned detector (kNN on screenshot features) | built | fit on 16 normal training runs; flags the sign-in wall and unseen overlays |
+| GoalGuard (decisions, hard policies, deterministic fallback, Gemini hook) | built | 19 tests in tests/guard.test.ts incl. refused recoveries, uncertain not approval, halted governor stops |
+| Recovery validation + executor gate + verification | built | tests; verified recoveries counted from observed state change |
+| Gemini assessor (prompt, schema, validation) | **written, tested only with a fake transport. No live call has ever run** | tests/assess.test.ts uses a test fixture. Not a Gemini result |
+| Scripted agent + 14 scenario kinds (train/val/test split by product) | built | scripts/run-unguarded.mts output inspected |
+| Eval harness + metrics | built | scripts/eval-goal.mts ran on val |
+| **Val results, keyless modes** | measured | below |
+| Test split | **not run on purpose** | held until the Gemini prompt is frozen on val |
+| Ped1/Ped2 public benchmark | measured | scripts/eval-ped.mts: Ped2 AUC 0.821 (kNN) vs 0.778 (motion baseline), n=2010 frames, 1648 anomalous. Ped1 (design): 0.722 vs 0.724. Modest. No SOTA claim |
+| Delegate mode: mandate, briefing, `record_from_evidence` takeover, watch-before-calling rule | built | tests/delegate.test.ts (15 tests); val run below |
+| Live chat (`/chat`, `/api/live`, `/api/live/reply`): a real agent drives the sandbox shop under the guard; streamed steps; local only | built | scripted agent end to end through the real HTTP route and the browser UI. Gemini agent ran once (looped; memory fix since added, not re-run). **Claude agent: written, typechecks, NEVER RUN (no key yet)** |
+| Boss loop: guard calls, pauses, boss replies (typed or dictated into the box), guard relays to the agent; yes approves one purchase once; stop stops; silence keeps it stopped | built | stub-buyer test (approve: 1 order, not harmful; stop: 0 orders) and the browser UI test with the scripted buyer; interpretReply unit tests |
+| Named agent-mistake rules (ping-pong, blind retry, phantom target, forgot findings, off task), live mode only | built | 10 unit tests. These are RULES, not a trained model. Off in the recorded evaluation so its numbers are unchanged |
+| "Surprise me" fault: shop problem chosen at random and revealed only after the run; the guard is never told | built | UI test |
+| Trained a failure-mode detector on MAST-Data (1,642 traces, 14 modes, CC-BY-4.0; Cemri et al. 2025, arXiv 2503.13657) | done; improved, still uneven, **does not gate anything** | `web/scripts/train-mast.py` (reproducible), `web/data/results/mast-eval.json`. Protocol: design on AG2/MetaGPT/ChatDev leave-one-framework-out, chosen config scored ONCE on Magentic. Naive all-words model: 0.49 design mean, 0.52 on Magentic. Chosen (shared words + length/repetition signals + strong regularisation): 0.61 design mean (AG2 0.46 = chance, MetaGPT 0.68, ChatDev 0.68), **0.76 on Magentic** (one framework, 11 modes). Labels are LLM-annotated. Multi-agent software traces, never validated on browser agents or this shop |
+| Named rules mapped to the closest MAST mode: ping-pong, blind retry, phantom target, forgot findings, off task, will not stop, unsupported claim, says done too early, breaks task rules | built | 14 unit tests. Rules, not trained. Live mode only |
+| **Ablation: learned screen-anomaly model OFF, rules-only guard, val split** | measured | `web/data/results/goal-val-nolearned.json`: 8/16 right outcome, 7/16 completed, 0 purchases, 0 false claims, 55/106 wasted steps, 0/8 normal interrupted. Identical outcomes to rules-only WITH the model (8/16, 7/16, 53/104). **The screen-anomaly model adds no measured value to the guard on these scenarios** (the rules see the same faults). Not measured with Gemini on (quota). Its standalone evidence is the Ped2 benchmark only |
+| General image-sequence anomaly pipeline: `web/scripts/eval-sequences.mts <dir>` (layout: train/<seq>/ frames, test/<seq>/ frames, optional labels.json). Any dataset the track provides can be dropped in | built | reproduces Ped2 exactly: frame AUC 0.821 vs motion baseline 0.778; at the training-only alarm threshold it alarmed in 8/12 anomalous segments, median delay 36 frames after onset, 0.0% false alarms on 362 normal frames (few normal frames). **Late, not early.** Video files need frames extracted first (no ffmpeg installed; `pip install imageio-ffmpeg` or opencv in a venv) |
+| Voice call: guard speaks (Gemini TTS, browser voice fallback), annotated screenshot, multi-turn Gemini conversation, boss talks via Voiskey voice typing (box auto-sends on pause), MIC fallback; purchase approval needs Gemini AND rules to agree | built | browser test: 2-turn call (question, then "okay yes, buy it") -> 1 order, approved; 4 call unit tests. **Not tested with Voiskey itself** (typed text stood in). iMessage image sending built, OFF, never sent (needs the user's number + consent) |
+| Real Gemini agent, live, price wall | run | after fixes (agent memory, shop-list price evidence, price compared by value): completed and verified against shop state, 0 orders. Found and fixed a false alarm: agent typed "11.50", guard compared text exactly |
+| Track 1 (leaderboard) | in progress | background worker in track1/; dataset downloaded manually (Drive quota blocked scripts); results go to track1/RESULTS.md |
+| TESC write-up + demo script | drafted | docs/TESC.md. Kit numbering: Track 2 Voiskey, Track 3 Gemini, Track 4 GrokBots. Teams can win only one prize |
+| Console UI (side by side replay) + /proof page | built | production build passes; screenshotted at desktop and phone width; 0 console errors |
+| API routes /api/judge, /api/speak, /api/voice | written, typechecked | **not exercised against Gemini** |
+| Voice teaching rules | built, unit tested | 13 tests; **audio path never run** |
+| Deploy | **done** | https://web-gules-sigma-c93ectbnnu.vercel.app (public alias; recorded runs, proof, chat page says live mode is local-only). `/`, `/proof`, `/chat` return 200 logged out; `/api/live` answers available:false. The per-deployment URLs are behind Vercel login, so share the alias |
+| Twilio phone call | **not built** | |
+| All checks | passing at last run | vitest 124 passed; tsc clean; eslint clean; `npm run build` passes; console screenshotted with 0 console errors |
+
+### Val results, keyless modes (val split: 24 scenarios = 8 normal + 16 fault runs; includes the new `wanderer` kind)
+| | No guard | Repeat-action heuristic | Goal-aware guard, rules only |
+|---|---|---|---|
+| Normal runs wrongly interrupted | 0/8 | 0/8 | 0/8 |
+| Fault runs ending in the right outcome | 0/16 | 0/16 | 8/16 |
+| Purchase executed against the task | 4/16 | 4/16 | 0/16 |
+| Agent falsely claimed success | 14/16 | 11/16 | 0/16 |
+| Safe stop / handed to human | 0/16 | 3/16 | 9/16 |
+| Finishable fault runs fixed and completed | 0/15 | 0/15 | 7/15 (3 save retries, 2 wanderer takeovers, 2 rogue-purchase runs finished after the purchase was blocked) |
+| Finishable fault runs done without a call | 2/15 | 2/15 | 7/15 |
+| Calls to the boss on finishable runs | 0/15 | 0/15 | 8/15 |
+| Calls to the boss on impossible runs (needed) | 0/1 | 0/1 | 1/1 |
+| Recoveries verified / tried | n/a | n/a | 7/7 |
+| Executed steps that achieved nothing | 222/271 | 192/241 | 53/104 |
+
+Per kind (guard rules only): normal, slowprice, popup_ad, cart_visit 2/2 each; savefail 3/3; rogue_buy 2/2; wanderer 2/2; impossible 1/1; **pricewall 0/3, promo 0/3, impatient 0/2**.
+The 8 calls to the boss on finishable runs are exactly pricewall, promo and impatient: rules cannot fix them. That is the gap Gemini must close, and it is the number to watch ("calls to the boss on finishable runs" going down without "purchase executed" or "false claims" going up).
+
+**Gemini column (measured Oct 24, `gemini-3.5-flash`, assessor prompt v1; saved in `web/data/results/goal-val-gemini-3.5-flash.json`):**
+| | No guard | Rules only | Rules + Gemini |
+|---|---|---|---|
+| Fault runs ending in the right outcome | 0/16 | 8/16 | 14/16 |
+| Purchase executed against the task | 4/16 | 0/16 | 0/16 |
+| Agent falsely claimed success | 14/16 | 0/16 | 0/16 |
+| Normal runs wrongly interrupted | 0/8 | 0/8 | 0/8 |
+| Finishable fault runs done without a call | 2/15 | 7/15 | 13/15 |
+| Calls to the boss on finishable runs | 0/15 | 8/15 | 2/15 |
+Gemini: 16 assessments, mean 8.8 s each. Per kind: pricewall 3/3, impatient 2/2, savefail 3/3, rogue 2/2, wanderer 2/2, impossible 1/1, promo 1/3.
+The 2 promo failures were read: "Got it" was dismissed correctly, then the scripted agent reloaded, the overlay returned, and the v1 prompt ("never repeat a recovery already used") pushed Gemini to a wrong action, `record_from_evidence` with no observed price. The guard refused it safely and called the boss. **Prompt v2 fixes the wording (only FAILED recoveries are off limits). v2 has NOT been measured.** Free-tier Gemini is capped (20 requests/day/model, `gemini-3.5-flash` exhausted until about 11:40 PM PT Oct 24), so the validation re-run and the one-shot test split need another model or another day, and must be labelled as such.
+
+Caveats found while building delegate mode (all on val, so allowed to tune there; the test split is untouched):
+- The `wanderer` scenario and its `record_from_evidence` rule were written together. It shows the mechanism works, not that rules generalize.
+- A lone "unusual screen" flag used to call the boss immediately (it did on the Feed page). It now only watches until the task has stalled for `stallLimit - 1` steps. That raised mean steps from fault to intervention slightly (0.0 -> 0.6).
+- "Recovery verified" is now stricter: a requirement must become satisfied or the overlay must clear. Moving into a blocked state is not help. 7/7 still verified.
+
+## Evaluation protocol (keeps results honest)
+- Gate settings and recovery stall limit chosen on val only. Gemini prompt tuned on val only. Test split run once, after freezing, with all four modes together.
+- Products split across train/val/test; no (product, kind) pair repeats across splits.
+- Ground truth (sheet contents, orders) is read from the browser by the evaluator only; never given to the guard or to Gemini.
+- Known weakness found while building: the original gate-only baseline stopped 12/27 normal runs (recorded-episode eval, data/results/val.json). The new suite shows 0/8 on its own normal runs. These are different suites and must not be compared as an improvement.
+- Rule-based lexicon deliberately lacks "Got it", the label the promo scenario uses.
+
+## Claims register (must stay true in all text)
+- The agent is scripted, not a model. The sandbox is mine. Results are not production benchmarks.
+- A detected failure is not a prevented failure unless the action was blocked or recovered.
+- Resumed execution is not recovery. Recovery counts only when a requirement visibly advanced or the overlay cleared.
+- Delegate mode never spends, sends or deletes. The one thing it types is the product name and the price the guard itself observed, only into the sheet.
+- "Calls to the boss" are counted from the run ends. No phone call exists yet; the briefing is text and a script, not a call.
+- Dictation (Wispr Flow or any tool) is not an integration: it types into the reply box. Nothing is claimed beyond that.
+- Live mode uses a different Gemini model than the recorded validation run (free tier caps each model per day). Never mix the two in a claim.
+- The MAST model is better after the protected-test redesign (0.76 on one unseen framework, but 0.46 on AG2 in the design phase) and unvalidated on this shop. Never say it "recognizes AI mistakes" as a product claim; the mistake checks in the guard are rules.
+- The proof page table is the VALIDATION split. The held-out test split has not been run.
+- The kNN model is a trained model on screenshot features. The stall, loop, requirement and policy rules are rules and are called rules.
+- Gemini confidence is self-reported, not calibrated.
+- No Voiskey integration. No phone call until a real call succeeds.
+- Gemini results exist only after a real API call. None exist yet.
+
+## Blockers
+1. **GEMINI_API_KEY** in web/.env.local. Free from https://aistudio.google.com/apikey. Without it: no Gemini column, no TESC Gemini proof, no recovery demo. Everything else is built.
+2. `! vercel login` for deploy.
+3. TESC photos / confirm the Voiskey question with organizers.
+4. Twilio trial credentials, only if the phone call is pursued after the core works.
+
+## Next single action
+When the key is in `web/.env.local`: `cd web && npx tsx scripts/check-gemini.mts`, then `npx tsx scripts/eval-goal.mts val --modes guard_gemini` and read every wrong decision.

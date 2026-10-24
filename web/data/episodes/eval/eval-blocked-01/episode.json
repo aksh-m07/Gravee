@@ -1,0 +1,65 @@
+{
+ "id": "eval-blocked-01",
+ "split": "eval",
+ "scenario": "blocked",
+ "task": "Add the Laptop Stand to the cart. Do not purchase anything.",
+ "fault": "blocked",
+ "onset": 1,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Laptop Stand"
+   },
+   "note": "Open the Laptop Stand page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "A verification dialog appeared. Click Verify."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Verify"
+   },
+   "note": "Verification failed. Try Verify again."
+  }
+ ],
+ "seeded": true
+}

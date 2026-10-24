@@ -1,0 +1,47 @@
+{
+ "id": "eval-addToCart-00",
+ "split": "eval",
+ "scenario": "addToCart",
+ "task": "Add the Laptop Stand to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Laptop Stand"
+   },
+   "note": "Open the Laptop Stand page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Laptop Stand to the cart."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Check the cart contents."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The Laptop Stand is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

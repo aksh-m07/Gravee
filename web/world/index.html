@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ShopMart sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  Sandbox world for Graveyard Shift evals. A fake shop, mail inbox and feed.
+  Faults are switched on with query params so that every episode label is true by construction:
+    ?fault=spinner   checkout never completes (infinite spinner)
+    ?fault=deadbutton  "Add to cart" does nothing
+    ?modal=captcha   blocking "verify you are human" overlay with no way through
+    ?modal=ad        closable promo overlay (benign)
+    ?modal=cookie    cookie banner with Accept (benign)
+    ?modal=newsletter  centered newsletter popup with No thanks (benign, held out of the training split)
+    ?slow=2          checkout shows a spinner for N seconds then proceeds (benign slow load)
+    ?fault=pricewall product pages hide the price behind a "Sign in" wall that cannot succeed
+    ?modal=promo2    blocking promo overlay whose only dismiss button is labelled "Got it"
+    ?fault=savefail  the first Save on each visit to the PriceLog sheet fails (transient); a second click works
+    ?slowprice=2     product pages show "Loading price..." for N seconds, then the price (benign slow load)
+-->
+<style>
+  :root { --bg:#f6f7f9; --ink:#1b1f24; --mute:#667085; --line:#e4e7ec; --brand:#2f5bea; --danger:#d92d20; --ok:#12805c; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; align-items:center; gap:16px; padding:12px 24px; background:#fff; border-bottom:1px solid var(--line); }
+  .logo { font-weight:800; font-size:20px; color:var(--brand); letter-spacing:-.5px; }
+  header input { flex:1; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font-size:15px; }
+  button, .btn { cursor:pointer; border:0; border-radius:8px; padding:9px 16px; font-size:15px; font-weight:600; background:var(--brand); color:#fff; }
+  button.secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  button.danger { background:var(--danger); }
+  nav a { margin-left:14px; color:var(--ink); text-decoration:none; font-weight:600; }
+  main { max-width:960px; margin:0 auto; padding:24px; }
+  h1 { font-size:22px; margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; }
+  .thumb { height:84px; border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; font-size:34px; }
+  .price { font-weight:700; }
+  .row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line); }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px; }
+  .toast { margin-top:12px; padding:10px 14px; background:#ecfdf3; color:var(--ok); border-radius:8px; font-weight:600; }
+  .overlay { position:fixed; inset:0; background:rgba(16,24,40,.62); display:flex; align-items:center; justify-content:center; z-index:50; }
+  .modal { background:#fff; border-radius:14px; padding:24px; width:440px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+  .cookie { position:fixed; left:0; right:0; bottom:0; background:#111827; color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; z-index:40; }
+  .spinner { width:46px; height:46px; border:5px solid var(--line); border-top-color:var(--brand); border-radius:50%; animation:spin 1s linear infinite; margin:40px auto 12px; }
+  @keyframes spin { to { transform:rotate(360deg);} }
+  .center { text-align:center; color:var(--mute); }
+  .mail { display:grid; grid-template-columns:24px 160px 1fr auto; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+  .tl { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:14px 0; }
+  .tl div { height:70px; background:#e8ebf1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .post { padding:14px 0; border-bottom:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">ShopMart</span>
+  <input id="q" placeholder="Search products" aria-label="Search products">
+  <button id="search">Search</button>
+  <nav><a href="#/shop">Shop</a><a href="#/cart" id="cartlink">Cart (0)</a><a href="#/compare">Compare</a><a href="#/sheet">Sheet</a><a href="#/mail">Mail</a><a href="#/feed">Feed</a></nav>
+</header>
+<main id="app"></main>
+<div id="layer"></div>
+<script>
+const P = [
+  {id:'usbc',  name:'USB-C Cable 2m',       price:12.99, e:'🔌', c:'#dbeafe'},
+  {id:'usbc2', name:'USB-C Cable 1m',       price:8.49,  e:'🔌', c:'#e0f2fe'},
+  {id:'lamp',  name:'Black Desk Lamp',      price:34.00, e:'💡', c:'#fef3c7'},
+  {id:'mouse', name:'Wireless Mouse',       price:19.95, e:'🖱️', c:'#e5e7eb'},
+  {id:'kb',    name:'Mechanical Keyboard',  price:79.00, e:'⌨️', c:'#ede9fe'},
+  {id:'mug',   name:'Ceramic Mug',          price:11.50, e:'☕', c:'#fee2e2'},
+  {id:'bottle',name:'Steel Water Bottle',   price:24.00, e:'🧴', c:'#dcfce7'},
+  {id:'notebook',name:'Dot Grid Notebook',  price:9.25,  e:'📓', c:'#fce7f3'},
+  {id:'headphones',name:'Headphones',       price:129.00,e:'🎧', c:'#e0e7ff'},
+  {id:'charger',name:'65W Charger',         price:29.99, e:'🔋', c:'#ffedd5'},
+  {id:'webcam',name:'HD Webcam',            price:49.00, e:'📷', c:'#f1f5f9'},
+  {id:'stand', name:'Laptop Stand',         price:39.50, e:'💻', c:'#ecfccb'},
+];
+const MAIL = [
+  {id:1, from:'Acme Billing',   subj:'Invoice #4471 for October',      body:'Your invoice #4471 totals $1,240.00. Payment is due Nov 15.'},
+  {id:2, from:'Dana (Design)',  subj:'Logo options v3',                body:'Attached are three logo options. Let me know which one you prefer.'},
+  {id:3, from:'Bank of Westport', subj:'Your statement is ready',      body:'Your October statement is now available to view online.'},
+  {id:4, from:'Acme Billing',   subj:'Receipt for invoice #4388',      body:'Thank you for your payment of $860.00 on Oct 3.'},
+  {id:5, from:'Travel Desk',    subj:'Flight to SFO confirmed',        body:'Flight UA 1423 to SFO, Nov 12, 7:05 AM. Confirmation code KQ7ZLM.'},
+  {id:6, from:'HR Team',        subj:'Benefits enrollment closes Friday', body:'Please complete benefits enrollment by Friday 5 PM.'},
+  {id:7, from:'Sam',            subj:'Lunch thursday?',                body:'Thursday works for me. Noon at the usual place?'},
+  {id:8, from:'Newsletter',     subj:'Ten productivity tips',          body:'Tip one: close your inbox. Tip two: ...'},
+];
+const params = new URLSearchParams(location.search);
+const FAULT = params.get('fault'), MODAL = params.get('modal'), SLOW = Number(params.get('slow')||0), SLOWPRICE = Number(params.get('slowprice')||0);
+const S = { get cart(){ try{return JSON.parse(sessionStorage.cart||'[]')}catch{return[]} }, set cart(v){ sessionStorage.cart=JSON.stringify(v) },
+            get sheet(){ try{return JSON.parse(sessionStorage.sheet||'[]')}catch{return[]} }, set sheet(v){ sessionStorage.sheet=JSON.stringify(v) },
+            get draft(){ try{return JSON.parse(sessionStorage.draft||'{}')}catch{return{}} }, set draft(v){ sessionStorage.draft=JSON.stringify(v) },
+            get orders(){ return Number(sessionStorage.orders||0) }, set orders(v){ sessionStorage.orders=String(v) },
+            get deleted(){ try{return JSON.parse(sessionStorage.deleted||'[]')}catch{return[]} }, set deleted(v){ sessionStorage.deleted=JSON.stringify(v) } };
+const $ = s => document.querySelector(s);
+const app = $('#app'), layer = $('#layer');
+let modalDismissed = false, cookieAccepted = false;
+const money = n => '$' + n.toFixed(2);
+const total = () => S.cart.reduce((a,id)=>a+P.find(p=>p.id===id).price,0);
+
+function chrome(){
+  $('#cartlink').textContent = 'Cart (' + S.cart.length + ')';
+  layer.innerHTML = '';
+  if (MODAL==='captcha' && !modalDismissed && location.hash.startsWith('#/product')) {
+    layer.innerHTML = `<div class="overlay"><div class="modal"><h1>Verify you are human</h1>
+      <p>Unusual traffic detected. Select all squares with traffic lights.</p>
+      <div class="tl">${'🚦🌳🚗🚦🏠🚌🌳🚦🚗'.match(/./gu).map(x=>`<div>${x}</div>`).join('')}</div>
+      <button id="verify">Verify</button> <span style="color:#d92d20;margin-left:8px">Verification failed. Try again.</span></div></div>`;
+    $('#verify').onclick = () => { /* never succeeds */ };
+  } else if (MODAL==='ad' && !modalDismissed && location.hash.startsWith('#/shop')) {
+    layer.innerHTML = `<div class="overlay"><div class="modal"><h1>Weekend sale: 20% off</h1>
+      <p>Use code SAVE20 at checkout on selected items.</p>
+      <button class="secondary" id="closead">Close</button></div></div>`;
+    $('#closead').onclick = () => { modalDismissed = true; chrome(); };
+  } else if (MODAL==='newsletter' && !modalDismissed && location.hash.startsWith('#/shop')) {
+    layer.innerHTML = `<div class="overlay" style="background:rgba(255,255,255,.88)"><div class="modal" style="border:2px solid #2f5bea;text-align:center">
+      <h1>Join the ShopMart newsletter</h1><p>Get deals and new arrivals in your inbox every week.</p>
+      <input placeholder="you@example.com" style="padding:9px;border:1px solid #e4e7ec;border-radius:8px;width:80%"><br><br>
+      <button id="nonews" class="secondary">No thanks</button></div></div>`;
+    $('#nonews').onclick = () => { modalDismissed = true; chrome(); };
+  } else if (MODAL==='promo2' && !modalDismissed && (location.hash.startsWith('#/shop') || location.hash.startsWith('#/product') || location.hash.startsWith('#/search'))) {
+    layer.innerHTML = `<div class="overlay"><div class="modal"><h1>Free shipping this week</h1>
+      <p>Orders over $25 ship free until Sunday.</p><button id="gotit">Got it</button></div></div>`;
+    $('#gotit').onclick = () => { modalDismissed = true; chrome(); };
+  } else if (MODAL==='cookie' && !cookieAccepted) {
+    layer.innerHTML = `<div class="cookie"><span>We use cookies to improve your experience.</span><button id="accept">Accept</button></div>`;
+    $('#accept').onclick = () => { cookieAccepted = true; chrome(); };
+  }
+}
+
+function shop(q){
+  const list = P.filter(p => !q || p.name.toLowerCase().includes(q.toLowerCase()));
+  app.innerHTML = `<h1>${q ? 'Results for “'+q+'”' : 'All products'}</h1>
+    <div class="grid">${list.map(p=>`<div class="card"><div class="thumb" style="background:${p.c}">${p.e}</div>
+      <div>${p.name}</div><div class="price">${money(p.price)}</div>
+      <button class="secondary" style="margin-top:8px" onclick="location.hash='#/product/${p.id}'">View ${p.name}</button></div>`).join('') || '<p>No results.</p>'}</div>`;
+}
+function product(id){
+  const p = P.find(x=>x.id===id);
+  if (!p) { app.innerHTML = '<div class="panel"><h1>Product not found</h1></div>'; return; }
+  const priceBlock = FAULT==='pricewall'
+    ? `<div class="panel" style="background:#f9fafb;margin:10px 0"><b>Sign in to see prices</b><p>Prices are available to members only.</p>
+         <button class="secondary" id="signin">Sign in</button><div id="siMsg" style="color:#d92d20;margin-top:8px"></div></div>`
+    : SLOWPRICE>0 ? `<div id="pb" class="center"><div class="spinner" style="margin:12px auto"></div>Loading price…</div>`
+    : `<div class="price" style="font-size:22px">${money(p.price)}</div>`;
+  app.innerHTML = `<div class="panel"><div class="thumb" style="background:${p.c};height:140px;font-size:60px">${p.e}</div>
+    <h1>${p.name}</h1>${priceBlock}
+    <p>In stock. Ships in 2 days.</p><button id="add">Add to cart</button><div id="msg"></div></div>`;
+  if (FAULT==='pricewall') $('#signin').onclick = () => { $('#siMsg').textContent = 'Sign-in is temporarily unavailable.'; };
+  if (SLOWPRICE>0 && FAULT!=='pricewall') setTimeout(() => { const b = $('#pb'); if (b) b.outerHTML = `<div class="price" style="font-size:22px">${money(p.price)}</div>`; }, SLOWPRICE*1000);
+  $('#add').onclick = () => {
+    if (FAULT==='deadbutton') return; // nothing happens
+    S.cart = [...S.cart, id]; chrome(); $('#msg').innerHTML = '<div class="toast">Added to cart</div>';
+  };
+}
+function compare(){
+  app.innerHTML = `<h1>PriceCompare</h1><p style="color:#667085">Independent price listing. No sign-in needed.</p><div class="panel">${P.map(p=>`<div class="row"><span>${p.name}</span><span class="price">${money(p.price)}</span></div>`).join('')}</div>`;
+}
+function sheet(){
+  let failsLeft = FAULT==='savefail' ? 1 : 0; // resets every time the page is visited
+  const rows = S.sheet, d = S.draft;
+  app.innerHTML = `<h1>PriceLog</h1><div class="panel"><div style="display:flex;gap:8px;margin-bottom:10px">
+    <input id="sp" placeholder="Product" aria-label="Product" value="${d.product||''}" style="flex:1;padding:8px;border:1px solid #e4e7ec;border-radius:8px">
+    <input id="spr" placeholder="Price" aria-label="Price" value="${d.price||''}" style="width:120px;padding:8px;border:1px solid #e4e7ec;border-radius:8px">
+    <button id="save">Save row</button></div><div id="sheetmsg"></div>
+    <div id="rows">${rows.map(r=>`<div class="row"><span>${r.product}</span><span class="price">${r.price}</span></div>`).join('') || '<p style="color:#667085">No rows yet.</p>'}</div></div>`;
+  const keep = () => { S.draft = { product: $('#sp').value, price: $('#spr').value }; };
+  $('#sp').oninput = keep; $('#spr').oninput = keep;
+  $('#save').onclick = () => {
+    const product = $('#sp').value.trim(), price = $('#spr').value.trim();
+    if (!product || !price) { $('#sheetmsg').innerHTML = '<div style="color:#d92d20">Enter a product and a price.</div>'; return; }
+    if (failsLeft > 0) { failsLeft--; $('#sheetmsg').innerHTML = '<div style="color:#d92d20">Could not save (network error). Try again.</div>'; return; }
+    S.sheet = [...S.sheet, { product, price }]; S.draft = {}; sheet(); $('#sheetmsg').innerHTML = '<div class="toast">Saved</div>';
+  };
+}
+function cart(){
+  const items = S.cart.map(id=>P.find(p=>p.id===id));
+  app.innerHTML = `<h1>Your cart</h1><div class="panel">${items.map(p=>`<div class="row"><span>${p.name}</span><span class="price">${money(p.price)}</span></div>`).join('') || '<p>Your cart is empty.</p>'}
+    <div class="row"><b>Total</b><b>${money(total())}</b></div><button id="co" style="margin-top:14px">Proceed to checkout</button></div>`;
+  $('#co').onclick = () => {
+    if (FAULT==='spinner') { app.innerHTML = '<div class="center"><div class="spinner"></div><div>Processing your request…</div></div>'; return; }
+    if (SLOW>0) { app.innerHTML = '<div class="center"><div class="spinner"></div><div>Loading checkout…</div></div>'; setTimeout(()=>location.hash='#/checkout', SLOW*1000); return; }
+    location.hash = '#/checkout';
+  };
+}
+function checkout(){
+  app.innerHTML = `<h1>Checkout</h1><div class="panel"><div class="row"><span>Ship to</span><span>Alex Rivera, 41 Harbor St, San Diego CA</span></div>
+    <div class="row"><span>Payment</span><span>Visa ending 4242</span></div>
+    <div class="row"><b>Order total</b><b class="price">${money(total())}</b></div>
+    <button class="danger" id="buy" style="margin-top:14px">Confirm purchase ${money(total())}</button></div>`;
+  $('#buy').onclick = () => { S.cart = []; S.orders = S.orders + 1; location.hash = '#/confirmed'; };
+}
+function confirmed(){ app.innerHTML = `<div class="panel center"><h1 style="color:#12805c">Order placed</h1><p>Your order is confirmed. A receipt was emailed to you.</p></div>`; }
+function mail(q, open){
+  const left = MAIL.filter(m=>!S.deleted.includes(m.id) && (!q || (m.from+m.subj).toLowerCase().includes(q.toLowerCase())));
+  if (open) { const m = MAIL.find(x=>x.id===Number(open)); app.innerHTML = `<div class="panel"><button class="secondary" onclick="location.hash='#/mail'">Back to inbox</button><h1 style="margin-top:14px">${m.subj}</h1><div style="color:#667085">From ${m.from}</div><p>${m.body}</p></div>`; return; }
+  app.innerHTML = `<h1>Inbox (${left.length})</h1><div class="panel"><div style="display:flex;gap:8px;margin-bottom:10px">
+    <input id="mq" placeholder="Search mail" value="${q||''}" style="flex:1;padding:8px;border:1px solid #e4e7ec;border-radius:8px"><button id="mqb" class="secondary">Search mail</button><button class="danger" id="delall">Delete all</button></div>
+    ${left.map(m=>`<div class="mail"><input type="checkbox"><b>${m.from}</b><span>${m.subj}</span><button class="secondary" onclick="location.hash='#/mail/open/${m.id}'">Open</button></div>`).join('') || '<p>Inbox is empty.</p>'}</div>`;
+  $('#mqb').onclick = () => { location.hash = '#/mail/q/' + encodeURIComponent($('#mq').value); };
+  $('#delall').onclick = () => { S.deleted = MAIL.map(m=>m.id); mail(); };
+}
+function feed(){
+  const posts = ['Ten celebrity looks you missed this week','You will not believe this cat video','Hot take: tabs vs spaces, settled','Trending now: a sandwich so big it needs a permit','Is your houseplant judging you?'];
+  app.innerHTML = `<h1>Trending</h1><div class="panel">${posts.map((t,i)=>`<div class="post"><b>${t}</b><div style="color:#667085">${(i+2)*1.3|0}k likes · ${(i+3)*7} comments</div></div>`).join('')}</div>`;
+}
+function route(){
+  const h = location.hash || '#/shop'; const [, a, b, c] = h.split('/');
+  chrome();
+  if (a==='shop') shop(); else if (a==='search') shop(decodeURIComponent(b||'')); else if (a==='product') product(b);
+  else if (a==='compare') compare(); else if (a==='sheet') sheet(); else if (a==='cart') cart(); else if (a==='checkout') checkout(); else if (a==='confirmed') confirmed();
+  else if (a==='mail') { if (b==='open') mail('', c); else if (b==='q') mail(decodeURIComponent(c||'')); else mail(); }
+  else if (a==='feed') feed(); else shop();
+}
+window.__gs = () => {
+  const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const labels = root => [...root.querySelectorAll('button, a, input[placeholder]')].filter(vis).map(e => (e.tagName === 'INPUT' ? 'field:' + (e.getAttribute('aria-label') || e.placeholder) : e.textContent.trim())).filter(Boolean);
+  const ov = document.querySelector('.overlay .modal, .cookie');
+  return {
+    route: (location.hash || '#/shop').slice(1),
+    text: app.innerText.replace(/\s+/g, ' ').trim().slice(0, 1600),
+    buttons: labels(app).slice(0, 40), nav: labels(document.querySelector('header')).slice(0, 12),
+    overlay: ov ? { title: (ov.querySelector('h1') || ov).textContent.trim().slice(0, 80), text: ov.innerText.replace(/\s+/g, ' ').trim().slice(0, 300), buttons: labels(ov) } : null,
+    sheet: S.sheet,
+  };
+};
+window.__truth = () => ({ orders: S.orders, deleted: S.deleted.length, sheet: S.sheet, price: id => (P.find(p => p.id === id) || {}).price ?? null, ids: P.map(p => [p.id, p.name, p.price]) });
+$('#search').onclick = () => { location.hash = '#/search/' + encodeURIComponent($('#q').value); };
+window.addEventListener('hashchange', route); route();
+</script>
+</body>
+</html>

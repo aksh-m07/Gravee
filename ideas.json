@@ -1,0 +1,158 @@
+[
+ {
+  "name": "1 Graveyard Shift v1 (voice camera night-watch) [BACKUP]",
+  "scores": {
+   "rubric_fit": 5,
+   "pain": 4,
+   "differentiation": 3,
+   "demo_wow": 5,
+   "feasibility": 4,
+   "technical_depth": 4,
+   "proof_layer": 5,
+   "sponsor_fit": 5,
+   "data_reliability": 4,
+   "team_fit": 4
+  }
+ },
+ {
+  "name": "2 PortCall (voice dispatch from live AIS ship data)",
+  "scores": {
+   "rubric_fit": 3,
+   "pain": 3,
+   "differentiation": 3,
+   "demo_wow": 3,
+   "feasibility": 3,
+   "technical_depth": 3,
+   "proof_layer": 3,
+   "sponsor_fit": 1,
+   "data_reliability": 2,
+   "team_fit": 3
+  },
+  "kills": [
+   "no TESC track fit; live AIS data needs paid/keys"
+  ]
+ },
+ {
+  "name": "3 Leash (watchdog for long-running AI agents: loop/overspend detection)",
+  "scores": {
+   "rubric_fit": 3,
+   "pain": 4,
+   "differentiation": 3,
+   "demo_wow": 3,
+   "feasibility": 4,
+   "technical_depth": 4,
+   "proof_layer": 4,
+   "sponsor_fit": 2,
+   "data_reliability": 4,
+   "team_fit": 4
+  },
+  "kills": [
+   "fits only 1 c0mpiled track, 0 TESC image track"
+  ]
+ },
+ {
+  "name": "4 Foreman (voice field reports for crews)",
+  "scores": {
+   "rubric_fit": 3,
+   "pain": 4,
+   "differentiation": 2,
+   "demo_wow": 3,
+   "feasibility": 5,
+   "technical_depth": 2,
+   "proof_layer": 2,
+   "sponsor_fit": 3,
+   "data_reliability": 5,
+   "team_fit": 4
+  },
+  "kills": [
+   "no image anomaly fit; reads as voice wrapper"
+  ]
+ },
+ {
+  "name": "5 Haunted Hallway (voice-run FNAF horror game with Gemini)",
+  "scores": {
+   "rubric_fit": 2,
+   "pain": 1,
+   "differentiation": 3,
+   "demo_wow": 4,
+   "feasibility": 4,
+   "technical_depth": 3,
+   "proof_layer": 1,
+   "sponsor_fit": 4,
+   "data_reliability": 4,
+   "team_fit": 4
+  },
+  "kills": [
+   "no c0mpiled fit, no user pain, no proof layer"
+  ]
+ },
+ {
+  "name": "6 Line Whisper (hands-free voice visual QA for assembly workers)",
+  "scores": {
+   "rubric_fit": 4,
+   "pain": 4,
+   "differentiation": 3,
+   "demo_wow": 3,
+   "feasibility": 3,
+   "technical_depth": 3,
+   "proof_layer": 4,
+   "sponsor_fit": 4,
+   "data_reliability": 2,
+   "team_fit": 3
+  },
+  "kills": [
+   "needs factory-like labeled image sequences we do not have"
+  ]
+ },
+ {
+  "name": "7 EyeSpeak (blind user ambient scene narration)",
+  "scores": {
+   "rubric_fit": 3,
+   "pain": 4,
+   "differentiation": 1,
+   "demo_wow": 4,
+   "feasibility": 4,
+   "technical_depth": 2,
+   "proof_layer": 2,
+   "sponsor_fit": 3,
+   "data_reliability": 4,
+   "team_fit": 4
+  },
+  "kills": [
+   "thin Gemini wrapper; many prior winners"
+  ]
+ },
+ {
+  "name": "8 Caretaker (elder-room fall/anomaly watcher that phones a relative)",
+  "scores": {
+   "rubric_fit": 4,
+   "pain": 5,
+   "differentiation": 2,
+   "demo_wow": 4,
+   "feasibility": 3,
+   "technical_depth": 3,
+   "proof_layer": 3,
+   "sponsor_fit": 4,
+   "data_reliability": 2,
+   "team_fit": 3
+  },
+  "kills": [
+   "no labeled fall data; privacy/medical claims unprovable"
+  ]
+ },
+ {
+  "name": "9 Graveyard Shift: night guard for AI agents (screen-sequence anomaly gate + Gemini judge + voice doors + attention budget)",
+  "scores": {
+   "rubric_fit": 5,
+   "pain": 4,
+   "differentiation": 4,
+   "demo_wow": 5,
+   "feasibility": 3,
+   "technical_depth": 5,
+   "proof_layer": 5,
+   "sponsor_fit": 5,
+   "data_reliability": 4,
+   "team_fit": 4
+  }
+ }
+]

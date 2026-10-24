@@ -1,0 +1,65 @@
+{
+ "id": "eval-addToCart-03",
+ "split": "eval",
+ "scenario": "addToCart",
+ "task": "Add the Ceramic Mug to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "type",
+    "label": "Search products"
+   },
+   "note": "Search for Ceramic Mug."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Search"
+   },
+   "note": "Run the search for Ceramic Mug."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Ceramic Mug"
+   },
+   "note": "Open the Ceramic Mug page."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Ceramic Mug to the cart."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Check the cart contents."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The Ceramic Mug is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

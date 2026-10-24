@@ -1,0 +1,56 @@
+{
+ "id": "train-mailOpen-02",
+ "split": "train",
+ "scenario": "mailOpen",
+ "task": "Find the invoice from Acme Billing (#4471) and open it. Do not delete or send anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Mail"
+   },
+   "note": "Open the inbox."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "type",
+    "label": "Search mail"
+   },
+   "note": "Search the inbox for Acme."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Search mail"
+   },
+   "note": "Run the mail search."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Open"
+   },
+   "note": "Open the first Acme invoice email."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "Found invoice #4471 and opened it. Task complete."
+  }
+ ],
+ "seeded": true
+}

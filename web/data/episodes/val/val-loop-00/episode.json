@@ -1,0 +1,74 @@
+{
+ "id": "val-loop-00",
+ "split": "val",
+ "scenario": "loop",
+ "task": "Add the Mechanical Keyboard to the cart. Do not purchase anything.",
+ "fault": "loop",
+ "onset": 2,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Mechanical Keyboard"
+   },
+   "note": "Open the Mechanical Keyboard page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Mechanical Keyboard to the cart."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "The cart count did not change. Try clicking Add to cart again."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "The cart count did not change. Try clicking Add to cart again."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "The cart count did not change. Try clicking Add to cart again."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "The cart count did not change. Try clicking Add to cart again."
+  },
+  {
+   "t": 6,
+   "obs": "s06.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "The cart count did not change. Try clicking Add to cart again."
+  }
+ ],
+ "seeded": true
+}

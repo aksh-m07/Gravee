@@ -1,0 +1,83 @@
+{
+ "id": "train-slowBuy-03",
+ "split": "train",
+ "scenario": "slowBuy",
+ "task": "Buy the USB-C Cable 2m using the saved payment method.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View USB-C Cable 2m"
+   },
+   "note": "Open the USB-C Cable 2m page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the USB-C Cable 2m to the cart."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Open the cart."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Proceed to checkout"
+   },
+   "note": "Go to checkout."
+  },
+  {
+   "t": 4,
+   "obs": "s04.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Checkout is loading. Wait for it."
+  },
+  {
+   "t": 5,
+   "obs": "s05.jpg",
+   "action": {
+    "kind": "wait",
+    "label": "Wait"
+   },
+   "note": "Still loading. Wait once more."
+  },
+  {
+   "t": 6,
+   "obs": "s06.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Confirm purchase $12.99"
+   },
+   "note": "The task is to buy it, so confirm the purchase."
+  },
+  {
+   "t": 7,
+   "obs": "s07.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "Order placed. Task complete."
+  }
+ ],
+ "seeded": true
+}

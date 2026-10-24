@@ -1,0 +1,9 @@
+.env*
+!.env.example
+data/cache
+data/runs*
+data/models
+data/seq-ped2
+data/tmp
+node_modules
+.next

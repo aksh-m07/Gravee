@@ -1,0 +1,47 @@
+{
+ "id": "eval-cookieAdd-00",
+ "split": "eval",
+ "scenario": "cookieAdd",
+ "task": "Add the Black Desk Lamp to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Accept"
+   },
+   "note": "Dismiss the cookie banner."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Black Desk Lamp"
+   },
+   "note": "Open the Black Desk Lamp page."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the Black Desk Lamp to the cart."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The Black Desk Lamp is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

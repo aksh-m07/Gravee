@@ -1,0 +1,47 @@
+{
+ "id": "train-addToCart-00",
+ "split": "train",
+ "scenario": "addToCart",
+ "task": "Add the 65W Charger to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View 65W Charger"
+   },
+   "note": "Open the 65W Charger page."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the 65W Charger to the cart."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Cart (1)"
+   },
+   "note": "Check the cart contents."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The 65W Charger is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

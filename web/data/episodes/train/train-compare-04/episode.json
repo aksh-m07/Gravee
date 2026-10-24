@@ -1,0 +1,47 @@
+{
+ "id": "train-compare-04",
+ "split": "train",
+ "scenario": "compare",
+ "task": "Compare the prices of the USB-C Cable 1m and the Laptop Stand and report which is cheaper. Do not add anything to the cart or buy.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View USB-C Cable 1m"
+   },
+   "note": "Open USB-C Cable 1m to read the price."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Shop"
+   },
+   "note": "Go back to the product list."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View Laptop Stand"
+   },
+   "note": "Open Laptop Stand to read the price."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "Compared the two prices and reported the cheaper one."
+  }
+ ],
+ "seeded": true
+}

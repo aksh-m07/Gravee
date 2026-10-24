@@ -1,0 +1,47 @@
+{
+ "id": "val-adThenAdd-00",
+ "split": "val",
+ "scenario": "adThenAdd",
+ "task": "Add the USB-C Cable 2m to the cart. Do not purchase anything.",
+ "fault": "none",
+ "onset": null,
+ "steps": [
+  {
+   "t": 0,
+   "obs": "s00.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Close"
+   },
+   "note": "A promo overlay is covering the page. Close it."
+  },
+  {
+   "t": 1,
+   "obs": "s01.jpg",
+   "action": {
+    "kind": "click",
+    "label": "View USB-C Cable 2m"
+   },
+   "note": "Open the USB-C Cable 2m page."
+  },
+  {
+   "t": 2,
+   "obs": "s02.jpg",
+   "action": {
+    "kind": "click",
+    "label": "Add to cart"
+   },
+   "note": "Add the USB-C Cable 2m to the cart."
+  },
+  {
+   "t": 3,
+   "obs": "s03.jpg",
+   "action": {
+    "kind": "finish",
+    "label": "Report task complete"
+   },
+   "note": "The USB-C Cable 2m is in the cart. Task complete."
+  }
+ ],
+ "seeded": true
+}

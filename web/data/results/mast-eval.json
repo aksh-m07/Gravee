@@ -1,0 +1,109 @@
+{
+ "dataset": "MAST-Data (mcemri/MAST-Data, CC-BY-4.0), 1642 traces, 7 frameworks",
+ "labels": "LLM-annotated by the dataset authors, validated against humans; not gold",
+ "protocol": "design on AG2/MetaGPT/ChatDev leave-one-framework-out; chosen configuration scored once on Magentic",
+ "design": {
+  "A  naive: all words, C=1": {
+   "per_framework": {
+    "AG2": 0.4748241749697033,
+    "MetaGPT": 0.4864317684584928,
+    "ChatDev": 0.5212630773222131
+   },
+   "mean": 0.4941730069168031
+  },
+  "A2 all words, C=0.1": {
+   "per_framework": {
+    "AG2": 0.473559076070679,
+    "MetaGPT": 0.46655388629090555,
+    "ChatDev": 0.5105098179209969
+   },
+   "mean": 0.4835409267608604
+  },
+  "B  words shared by >=2 training frameworks, C=1": {
+   "per_framework": {
+    "AG2": 0.47331743833284734,
+    "MetaGPT": 0.47627318015916764,
+    "ChatDev": 0.5677644695668778
+   },
+   "mean": 0.5057850293529643
+  },
+  "B2 shared words, C=0.1": {
+   "per_framework": {
+    "AG2": 0.4698676201980938,
+    "MetaGPT": 0.4744690026503827,
+    "ChatDev": 0.5778824429867138
+   },
+   "mean": 0.5074063552783968
+  },
+  "B3 shared words (>=3% of docs), C=0.1": {
+   "per_framework": {
+    "AG2": 0.45325755589685257,
+    "MetaGPT": 0.48627041843959523,
+    "ChatDev": 0.545417831707681
+   },
+   "mean": 0.4949819353480429
+  },
+  "C  shared words + structure signals, C=0.1": {
+   "per_framework": {
+    "AG2": 0.4596584012479004,
+    "MetaGPT": 0.6746385420508741,
+    "ChatDev": 0.6826208791655688
+   },
+   "mean": 0.6056392741547811
+  }
+ },
+ "chosen": "C  shared words + structure signals, C=0.1",
+ "naive": "A  naive: all words, C=1",
+ "final_magentic": {
+  "A  naive: all words, C=1": {
+   "mean_auc": 0.5147200214688629,
+   "modes_scored": 11,
+   "per_mode": {
+    "1.1": 0.46141622171370456,
+    "1.3": 0.4838709677419355,
+    "1.4": 0.5305684071381361,
+    "1.5": 0.4801221335992024,
+    "2.2": 0.5872771296500111,
+    "2.3": 0.4146684609738195,
+    "2.5": 0.6130645161290321,
+    "2.6": 0.4822706228956229,
+    "3.1": 0.5161938798302436,
+    "3.2": 0.6084037253627897,
+    "3.3": 0.4840641711229947
+   }
+  },
+  "C  shared words + structure signals, C=0.1": {
+   "mean_auc": 0.7626680863302269,
+   "modes_scored": 11,
+   "per_mode": {
+    "1.1": 0.6799516908212561,
+    "1.3": 0.883617963314358,
+    "1.4": 0.8825181758096496,
+    "1.5": 0.8410393818544368,
+    "2.2": 0.7317851639885539,
+    "2.3": 0.7578297039393198,
+    "2.5": 0.7733870967741936,
+    "2.6": 0.6603009259259259,
+    "3.1": 0.759772168863078,
+    "3.2": 0.732943469785575,
+    "3.3": 0.6862032085561498
+   }
+  }
+ },
+ "mode_names": {
+  "1.1": "Disobey task specification",
+  "1.2": "Disobey role specification",
+  "1.3": "Step repetition",
+  "1.4": "Loss of conversation history",
+  "1.5": "Unaware of termination conditions",
+  "2.1": "Conversation reset",
+  "2.2": "Fail to ask for clarification",
+  "2.3": "Task derailment",
+  "2.4": "Information withholding",
+  "2.5": "Ignored other agent's input",
+  "2.6": "Reasoning-action mismatch",
+  "3.1": "Premature termination",
+  "3.2": "No or incomplete verification",
+  "3.3": "Incorrect verification"
+ }
+}
