@@ -45,11 +45,11 @@ test("cannot stop while the last test failed, or claim it works after untested e
 
 // The whole hook, fed the same JSON Claude Code sends, offline (no Gemini, no voice, no texts).
 function hook(ev, home) {
-  const env = { ...process.env, GRAVEYARD_HOME: home, GRAVEYARD_ENV: "/nonexistent", GEMINI_API_KEY: "", IMESSAGE_TO: "", GRAVEYARD_VOICE: "off" };
+  const env = { ...process.env, GRAVEYARD_HOME: home, GRAVEYARD_ENV: "/nonexistent", GEMINI_API_KEY: "", GOOGLE_API_KEY: "", IMESSAGE_TO: "", TELEGRAM_BOT_TOKEN: "", TELEGRAM_OWNER_ID: "", TELEGRAM_CHAT_ID: "", GRAVEYARD_VOICE: "off" };
   const outp = execFileSync("node", [path.join(import.meta.dirname, "..", "hook.mjs")], { input: JSON.stringify({ session_id: "t", ...ev }), env }).toString();
   return outp ? JSON.parse(outp) : null;
 }
-test("end to end: blocks a blind retry, asks about a force push, refuses to stop on a failing test", () => {
+test("hook events: blocks a blind retry, halts an unconfigured escalation, refuses false completion", () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "gs-"));
   hook({ hook_event_name: "UserPromptSubmit", prompt: "fix the login bug" }, home);
   for (let i = 0; i < 2; i++) {
@@ -60,16 +60,17 @@ test("end to end: blocks a blind retry, asks about a force push, refuses to stop
   assert.equal(third.hookSpecificOutput.permissionDecision, "deny");
   assert.match(third.hookSpecificOutput.permissionDecisionReason, /already failed 2 times/);
   const push = hook({ hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: bash("git push --force origin main") }, home);
-  assert.equal(push.hookSpecificOutput.permissionDecision, "ask");
+  assert.equal(push.hookSpecificOutput.permissionDecision, "deny");
+  assert.equal(push.continue, false);
   const stop = hook({ hook_event_name: "Stop", stop_hook_active: false, last_assistant_message: "Fixed! All tests pass." }, home);
   assert.equal(stop.decision, "block");
   assert.equal(hook({ hook_event_name: "Stop", stop_hook_active: true }, home), null, "never loops on its own block");
   const lines = fs.readFileSync(path.join(home, "log.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l).event);
-  assert.deepEqual(lines, ["gemini_unavailable", "redirect", "ask_human", "texted", "block_stop"]); // without a key it says so, then the rules decide
+  assert.deepEqual(lines, ["gemini_unavailable", "redirect", "ask_human", "block_stop"]); // without a key it says so, then the rules decide
 });
-test("a broken event never breaks the session", () => {
+test("a broken event fails closed", () => {
   const out = execFileSync("node", [path.join(import.meta.dirname, "..", "hook.mjs")], { input: "not json", env: { ...process.env, GRAVEYARD_HOME: fs.mkdtempSync(path.join(os.tmpdir(), "gs-")), GRAVEYARD_ENV: "/nonexistent" } }).toString();
-  assert.equal(out, "");
+  assert.equal(JSON.parse(out).continue, false);
 });
 import { isVerify } from "../lib/detect.mjs";
 test("only real test/build runs count as verification", () => {
@@ -77,9 +78,9 @@ test("only real test/build runs count as verification", () => {
   for (const c of ["cat price.test.js", "ls tests/", "git commit -m 'add tests'"]) assert.ok(!isVerify("Bash", bash(c)), c);
 });
 import { readReply, replyPage } from "../lib/phone.mjs";
-test("phone replies: yes allows, stop stops, anything else is an instruction for Claude", () => {
-  assert.equal(readReply("yes").kind, "approve");
-  assert.equal(readReply("Yes, buy it").kind, "approve");
+test("text replies: yes needs clarification, stop stops, conditions remain guidance", () => {
+  assert.equal(readReply("yes").kind, "ambiguous");
+  assert.equal(readReply("Yes, buy it").kind, "ambiguous");
   assert.deepEqual(readReply("yes but push to a branch called fix instead"), { kind: "instruct", text: "yes but push to a branch called fix instead" });
   assert.equal(readReply("stop everything").kind, "stop");
   assert.equal(readReply("no").kind, "deny");
@@ -96,20 +97,4 @@ test("phone reply page: a reply posted to the secret link comes back; anything e
 test("phone reply page: no answer in time means null (the terminal asks instead)", async () => {
   const { answer } = await replyPage({ question: "?", cardFile: null, waitMs: 50 });
   assert.equal(await answer, null);
-});
-import { spawn } from "node:child_process";
-test("end to end: the boss answers a force-push question from the phone page and Claude gets the instruction", async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "gs-"));
-  const env = { ...process.env, GRAVEYARD_HOME: home, GRAVEYARD_ENV: "/nonexistent", GEMINI_API_KEY: "", IMESSAGE_TO: "+10000000000", GRAVEYARD_TEXT: "off", GRAVEYARD_VOICE: "off", GRAVEYARD_REPLY_WAIT_S: "20" };
-  const child = spawn("node", [path.join(import.meta.dirname, "..", "hook.mjs")], { env });
-  let out = ""; child.stdout.on("data", (d) => { out += d; });
-  child.stdin.end(JSON.stringify({ session_id: "p", hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command: "git push --force origin main" } }));
-  let link = null;
-  for (let i = 0; i < 80 && !link; i++) { await new Promise((r) => setTimeout(r, 100)); try { link = fs.readFileSync(path.join(home, "log.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).find((e) => e.testLink)?.testLink; } catch { /* not yet */ } }
-  assert.ok(link, "the reply link was written");
-  await fetch(link.replace(/\/\/[^:]+:/, "//127.0.0.1:"), { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "text=" + encodeURIComponent("no, open a pull request from a new branch instead") });
-  await new Promise((r) => child.on("close", r));
-  const d = JSON.parse(out).hookSpecificOutput;
-  assert.equal(d.permissionDecision, "deny");
-  assert.match(d.permissionDecisionReason, /replied from their phone: "no, open a pull request from a new branch instead"/);
 });

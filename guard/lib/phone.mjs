@@ -26,7 +26,7 @@ textarea{width:100%;box-sizing:border-box;min-height:110px;font:17px -apple-syst
 button{margin-top:10px;width:100%;min-height:52px;font-size:18px;font-weight:700;background:#0f2a1b;color:#3dff8b;border:1px solid #1d5b3a;border-radius:8px}.hint{color:#8e9aa8;font-size:14px}</style></head>
 <body><h1>GRAVEYARD SHIFT · CLAUDE NEEDS YOU</h1>${img ? `<img src="${img}" alt="What Claude wants to do and what is wrong">` : ""}<p>${esc(question)}</p>
 <form method="post"><textarea name="text" autofocus placeholder="Tap here and talk with the Voiskey keyboard. Say yes, no, stop, or tell Claude what to do instead."></textarea><button>SEND TO CLAUDE</button></form>
-<p class="hint">Your words go straight to Claude. "Yes" allows this one action. "Stop" blocks it. Anything else becomes Claude's next instruction.</p></body></html>`;
+<p class="hint">Your words become guidance. Text alone cannot approve an action. "Stop" blocks it.</p></body></html>`;
   const server = http.createServer((req, res) => {
     if (!req.url?.startsWith(`/${token}`)) { res.writeHead(404).end(); return; }
     if (req.method === "POST") {
@@ -51,9 +51,9 @@ button{margin-top:10px;width:100%;min-height:52px;font-size:18px;font-weight:700
 /** What the boss's words mean for the action Claude is waiting on. */
 export function readReply(text) {
   const t = text.trim();
-  if (/\b(stop|cancel|abort|halt|kill it)\b/i.test(t) && !/\b(don'?t|do not) stop\b/i.test(t)) return { kind: "stop" };
-  // A plain yes ("yes", "yes, buy it", "ok go ahead") approves. A yes with a condition ("yes but on a branch") is an instruction.
-  if (/^(yes|yeah|yep|ok|okay|sure|go ahead|do it|approve[d]?|allow it|confirm(ed)?)\b/i.test(t) && !/\b(but|instead|not|don'?t|except|only if|first)\b/i.test(t)) return { kind: "approve" };
-  if (/^(no|nope|don'?t|do not)[.!\s]*$/i.test(t)) return { kind: "deny" };
+  if (/^(?:\/stop|stop(?: everything| now| this task| the task| work)?|cancel|abort|halt|kill it)[.!\s]*$/i.test(t)) return { kind: "stop" };
+  if (/^(no|nope|reject|deny)\b/i.test(t) || /^(don'?t|do not)( execute| do (it|this))?[.!\s]*$/i.test(t)) return { kind: "deny" };
+  // Preserve conditions verbatim. Free-form text can never create an approval.
+  if (!t || /^(yes|yeah|yep|ok|okay|sure|go ahead|do it|approve[d]?|allow it|confirm(ed)?|maybe|not sure)\b/i.test(t) && !/\b(if|after|before|unless|provided|but|instead|not|don'?t|except|first|preserve|keep)\b/i.test(t)) return { kind: "ambiguous" };
   return { kind: "instruct", text: t };
 }

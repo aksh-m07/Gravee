@@ -1,7 +1,7 @@
 # Graveyard Shift browser app
 
 Run commands from this `web/` directory using Node **24.15.0**, npm **11.12.1**.
-See the [root setup guide](../README.md#run-it) for the demonstration task and caveats.
+See the [root setup guide](../README.md#run-the-browser-baseline) for the demonstration task and caveats.
 
 ```bash
 npm ci

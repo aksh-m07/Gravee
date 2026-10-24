@@ -2,11 +2,15 @@
 
 **The night guard that knows when your AI agent has stopped making progress.**
 
-Autonomous browser agents can keep clicking, searching and retrying while accomplishing nothing, and each action looks valid on its own. Graveyard Shift keeps the *task* in view: it tracks verifiable requirements, intercepts the next action before it runs, uses Gemini to diagnose a stall and propose a safe recovery, validates that proposal against hard policies, and then checks whether the recovery actually worked.
+The primary product supervises **Claude Code in a terminal**. Existing hooks detect repeated failures and loops, Gemini diagnoses and can redirect, and decisions needing the owner are held while a private Telegram briefing asks for guidance. Dictated or typed text preserves conditions; consequential approval requires an exact-action inline button consumed once. Silence leaves the action blocked.
+
+Start with the [terminal setup and verification limits](guard/README.md). Live Telegram and a Gemini diagnosis through the hook have been verified with an explicit test caller. **An authenticated Claude session is still blocked on this Mac by missing account access, and Voiskey use is unverified.**
+
+The existing browser sandbox below remains a verified secondary baseline: it tracks observable requirements, validates recovery proposals, and checks their results. Its shop and worker are simulated/scripted.
 
 > Status and caveats are tracked in [`HACKATHON_STATE.md`](HACKATHON_STATE.md). Everything below is labelled built, partial or not run.
 
-## How it works
+## Browser sandbox baseline: how it works
 
 ```
 agent proposes action ──► GoalGuard.review ──► ALLOW / BLOCK / RECOVER / ASK_HUMAN / STOP
@@ -28,7 +32,7 @@ agent proposes action ──► GoalGuard.review ──► ALLOW / BLOCK / RECOV
 * `web/lib/assess.ts` the Gemini assessor (system prompt, schema, validation). `web/lib/gemini.ts` client with timeout, retry, cache.
 * `web/lib/governor.ts` call budget, rate cap, circuit breaker. `web/sandbox/` the browser sandbox, scripted agent and runner.
 
-## Run it
+## Run the browser baseline
 
 Use **Node 24.15.0 and npm 11.12.1** (the checked baseline; `.nvmrc` pins Node).
 From the repository root, `nvm use` selects that version if you use nvm.

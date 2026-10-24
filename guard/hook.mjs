@@ -1,76 +1,63 @@
 #!/usr/bin/env node
 // Graveyard Shift: a night guard for Claude Code. Runs as a hook on every step; see README.md.
-// It must never break the user's session: any internal error means "no opinion" (exit 0, nothing printed).
+// Policy errors fail closed. A bounded synchronous hook holds one exact action.
 import fs from "node:fs";
-import os from "node:os";
+import crypto from "node:crypto";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { failureStreak, hash, isVerify, keyOf, loopOf, riskOf, stopCheck, summaryOf } from "./lib/detect.mjs";
 import { assess } from "./lib/gemini.mjs";
-import { speak, textPhone } from "./lib/notify.mjs";
-import { renderCard } from "./lib/card.mjs";
-import { readReply, replyPage } from "./lib/phone.mjs";
+import { loadEnv, STATE_HOME, telegramConfig, replyWaitMs, redact } from "./lib/config.mjs";
+import { readJson, writeJson, fingerprint, sessionStopFile } from "./lib/decisions.mjs";
+import { escalateTelegram } from "./lib/telegram.mjs";
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const HOME = process.env.GRAVEYARD_HOME ?? path.join(os.homedir(), ".graveyard-shift");
-const MAX_CONSULTS = 12;
-
-// Keys come from the environment, or from the project's web/.env.local (never printed, never logged).
-function loadEnv() {
-  const file = process.env.GRAVEYARD_ENV ?? path.join(HERE, "..", "web", ".env.local");
-  try {
-    for (const line of fs.readFileSync(file, "utf8").split("\n")) {
-      const m = line.match(/^(GEMINI_API_KEY|IMESSAGE_TO)=(.*)$/);
-      if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].trim(); // an explicit empty value switches it off
-    }
-  } catch { /* optional */ }
-}
-
-const stateFile = (sid) => path.join(HOME, "sessions", `${String(sid).replace(/[^\w-]/g, "")}.json`);
-const load = (sid) => { try { return JSON.parse(fs.readFileSync(stateFile(sid), "utf8")); } catch { return { goal: "", history: [], consults: 0, stopBlocks: 0 }; } };
-const save = (sid, s) => { fs.mkdirSync(path.dirname(stateFile(sid)), { recursive: true }); s.history = s.history.slice(-60); fs.writeFileSync(stateFile(sid), JSON.stringify(s)); };
-const log = (e) => { try { fs.mkdirSync(HOME, { recursive: true }); fs.appendFileSync(path.join(HOME, "log.jsonl"), JSON.stringify({ at: new Date().toISOString(), ...e }) + "\n"); } catch { /* best effort */ } };
-
+loadEnv();
+const HOME = STATE_HOME();
+const MAX_CONSULTS = 12; // actual supervisor generation attempts per persisted session
+const stateFile = (sid) => path.join(HOME, "sessions", `${crypto.createHash("sha256").update(String(sid)).digest("hex")}.json`);
+const stopFile = (sid) => sessionStopFile(HOME, sid);
+const load = (sid) => readJson(stateFile(sid), { goal: "", history: [], consults: 0, stopBlocks: 0, stopped: false });
+const save = (sid, s) => { s.history = s.history.slice(-60); writeJson(stateFile(sid), s); };
+const log = (e) => { try { fs.mkdirSync(HOME, { recursive: true, mode: 0o700 }); fs.appendFileSync(path.join(HOME, "log.jsonl"), JSON.stringify({ at: new Date().toISOString(), ...e }, (_k, v) => typeof v === "string" ? redact(v) : v) + "\n", { mode: 0o600 }); } catch { /* diagnostic only */ } };
 const out = (o) => process.stdout.write(JSON.stringify(o));
 const pre = (decision, reason) => out({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: reason } });
+const hold = (reason) => out({ continue: false, stopReason: reason, hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason } });
 
-const PHONE_WAIT_MS = Number(process.env.GRAVEYARD_REPLY_WAIT_S ?? 180) * 1000;
+/** No resume API: this hook remains alive while the exact tool call waits. */
+async function askBoss(sid, question, { tool, input, history, tried, verdict, goal, cwd }) {
+  const config = telegramConfig();
+  if (!config) return { halt: true, reason: "Graveyard Shift: Telegram owner is not configured. The action did not run. Configure guard/.env.local and pair the owner, then issue a new prompt in Claude Code." };
+  const actionHash = fingerprint({ sid, tool, input, cwd });
+  const { result, approved } = await escalateTelegram({ home: HOME, config, sid, tool, input, cwd, goal, history, tried, question, verdict, actionHash, expiresAt: Date.now() + replyWaitMs() });
+  log({ sid, event: "telegram_decision", decision: result.id, status: result.status, consumed: approved, actionHash });
+  if (approved) return { decision: "allow", reason: `Graveyard Shift: owner approved this exact action once (decision ${result.id}, ${actionHash}). Approval consumed before returning to Claude.` };
+  if (result.status === "guidance") return { decision: "deny", reason: `Graveyard Shift: this action is blocked. The owner's original guidance follows verbatim; preserve every condition and do not treat it as approval: ${result.originalReply}` };
+  if (result.status === "deny") return { decision: "deny", reason: `Graveyard Shift: the owner rejected this exact action. It must not execute. Original reply: ${result.originalReply}. No alternative consequential action has been approved.` };
+  if (result.status === "cancelled") return { stop: true, halt: true, reason: "Graveyard Shift: the owner stopped this task. The held action did not execute. This stops the Claude turn, not the operating-system process. A new user prompt beginning Resume is required to continue." };
+  return { halt: true, reason: `Graveyard Shift: decision ${result.id} is ${result.status}. The action did not run. Late Telegram replies cannot resume it. Inspect the decision locally, then issue a new Claude prompt to retry or choose another action.` };
+}
 
-/**
- * Brings the boss in: says it aloud, texts the phone a picture of the exact code or command and what is wrong, with a reply link,
- * and waits for the answer (typed or spoken with the Voiskey keyboard). Returns the PreToolUse decision to give Claude.
- * No answer in time: fall back to Claude Code's own prompt in the terminal.
- */
-async function askBoss(sid, question, { tool, input, history, verdict }) {
-  speak(`Graveyard Shift. ${question}`);
-  const code = tool === "Bash" ? `$ ${input?.command ?? ""}` : tool ? `${tool} ${input?.file_path ?? ""}\n${String(input?.new_string ?? input?.content ?? "").slice(0, 900)}` : "";
-  const lastErr = [...(history ?? [])].reverse().find((h) => h.ok === false)?.error ?? "";
-  let card = null;
-  try { card = await renderCard({ title: "GRAVEYARD SHIFT: CLAUDE NEEDS YOU", code, error: lastErr, verdict: verdict ?? question }); } catch { card = null; }
-  const phone = process.env.IMESSAGE_TO && process.env.GRAVEYARD_PHONE_REPLY !== "off" ? await replyPage({ question, cardFile: card, waitMs: PHONE_WAIT_MS }) : null;
-  const texted = await textPhone(`Graveyard Shift: Claude needs you. ${question}${phone ? ` Answer here (talk with the Voiskey keyboard): ${phone.url}` : " Answer in Claude Code."}`, card);
-  log({ sid, event: "texted", texted, replyLink: !!phone, ...(texted === "skipped" ? { testLink: phone?.url } : {}) });
-  const said = phone && !texted.startsWith("failed") && texted !== "off" ? await phone.answer : null;
-  if (phone && said === null) phone.close?.();
-  if (said === null) return ["ask", `Graveyard Shift: ${question}`];
-  const r = readReply(said);
-  log({ sid, event: "boss_replied", via: "phone", understood: r.kind, said });
-  if (r.kind === "approve") return ["allow", `Approved by the user from their phone ("${said}").`];
-  if (r.kind === "stop") return ["deny", `The user said stop ("${said}"). Do not continue this task; tell them where things stand.`];
-  if (r.kind === "deny") return ["deny", `The user said no to this action ("${said}"). Do not do it. Continue another way, or ask them.`];
-  return ["deny", `The user replied from their phone: "${r.text}". Follow that instead of this action.`];
+function emitBoss(reply, sid, s) {
+  if (reply.stop) { writeJson(stopFile(sid), { stopped: true }); s.stopped = true; save(sid, s); }
+  if (reply.halt) hold(reply.reason); else pre(reply.decision, reply.reason);
 }
 
 async function main() {
   const raw = fs.readFileSync(0, "utf8");
   const ev = JSON.parse(raw || "{}");
-  loadEnv();
+  if (typeof ev.session_id !== "string" || !ev.session_id || ev.hook_event_name === "PreToolUse" && (typeof ev.tool_name !== "string" || !ev.tool_input || typeof ev.tool_input !== "object" || Array.isArray(ev.tool_input))) throw new Error("Invalid hook event identity");
   const sid = ev.session_id ?? "unknown";
   const s = load(sid);
+  s.interventions ??= [];
+  s.stopped = !!readJson(stopFile(sid)) || s.stopped;
   const name = ev.hook_event_name;
 
   if (name === "UserPromptSubmit") {
-    s.goal = String(ev.prompt ?? "").slice(0, 600); s.stopBlocks = 0;
+    if (s.stopped && !/^resume\b/i.test(String(ev.prompt ?? "").trim())) {
+      out({ decision: "block", reason: "This session was stopped by its owner. Begin a new prompt with Resume to continue deliberately." }); return;
+    }
+    s.stopped = false;
+    fs.rmSync(stopFile(sid), { force: true });
+    s.goal = String(ev.prompt ?? "").slice(0, 600); s.stopBlocks = 0; s.interventions = [];
     save(sid, s); return;
   }
 
@@ -90,14 +77,15 @@ async function main() {
   if (name === "PreToolUse") {
     const tool = ev.tool_name, input = ev.tool_input ?? {};
     const proposed = summaryOf(tool, input);
+    if (s.stopped) { hold("Graveyard Shift: session stopped by owner; held action cannot execute. Begin a new user prompt with Resume to continue."); return; }
+    const ask = (question, verdict) => askBoss(sid, question, { tool, input, history: s.history, tried: s.interventions, goal: s.goal, cwd: ev.cwd, verdict });
 
     // 1. Irreversible or outward-facing: always the human's call. No model can wave it through.
     const risk = riskOf(tool, input);
     if (risk) {
       const q = `Claude wants to ${proposed}. That ${risk.why}. Allow it?`;
       log({ sid, event: "ask_human", source: "rule", proposed, why: risk.why });
-      const [d, why] = await askBoss(sid, q, { tool, input, history: s.history, verdict: `Guard: this ${risk.why}. Only you can approve it.` });
-      pre(d, why); return;
+      emitBoss(await ask(q, `Guard: this ${risk.why}. Only the owner can approve this exact action.`), sid, s); return;
     }
 
     // 2. Cheap checks. Nothing flagged: stay silent and let the normal flow continue.
@@ -108,22 +96,23 @@ async function main() {
 
     // 3. Something is off: ask Gemini what is really going on, within a budget.
     if (s.consults < MAX_CONSULTS) {
-      s.consults++; save(sid, s);
       try {
-        const g = await assess({ key: process.env.GEMINI_API_KEY, goal: s.goal, history: s.history, proposed, flags });
+        const g = await assess({ key: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY, goal: s.goal, history: s.history, proposed, flags,
+          reserve(model) { if (s.consults >= MAX_CONSULTS) return false; s.consults++; save(sid, s); log({ sid, event: "gemini_attempt", model, attempt: s.consults }); return true; },
+        });
         log({ sid, event: g.decision, source: "gemini", model: g.model, proposed, flags, diagnosis: g.diagnosis });
+        s.interventions.push({ kind: `Gemini ${g.decision}`, detail: g.advice || g.diagnosis }); s.interventions = s.interventions.slice(-8); save(sid, s);
         if (g.decision === "allow") return;
         if (g.decision === "redirect") { pre("deny", `Graveyard Shift (Gemini): ${g.diagnosis} Do this instead: ${g.advice}`); return; }
-        const [d, why] = await askBoss(sid, g.question || g.diagnosis, { tool, input, history: s.history, verdict: `Gemini: ${g.diagnosis}` });
-        pre(d, d === "ask" ? `Graveyard Shift (Gemini) needs you: ${g.question || g.diagnosis}` : why); return;
+        emitBoss(await ask(g.question || g.diagnosis, `Gemini: ${g.diagnosis}`), sid, s); return;
       } catch (e) {
         log({ sid, event: "gemini_unavailable", error: String(e?.message ?? e).slice(0, 120) });
       }
     }
 
     // 4. Without Gemini the rules decide, and say so.
-    if (loop) { log({ sid, event: "redirect", source: "rule", proposed, why: loop.why }); pre("deny", `Graveyard Shift: ${loop.why}. Do not repeat it. Read the error, change the approach, or ask the user.`); return; }
-    if (streak >= 8) { const q = `Claude has failed ${streak} steps in a row on: ${s.goal.slice(0, 120) || "its task"}. Should it keep going?`; log({ sid, event: "ask_human", source: "rule", proposed, why: q }); const [d, why] = await askBoss(sid, q, { tool, input, history: s.history }); pre(d, why); }
+    if (loop) { log({ sid, event: "redirect", source: "rule", proposed, why: loop.why }); s.interventions.push({ kind: "Rule redirect", detail: loop.why }); s.interventions = s.interventions.slice(-8); save(sid, s); pre("deny", `Graveyard Shift: ${loop.why}. Do not repeat it. Read the error, change the approach, or ask the user.`); return; }
+    if (streak >= 8) { const q = `Claude has failed ${streak} steps in a row on: ${s.goal.slice(0, 120) || "its task"}. Should it keep going?`; log({ sid, event: "ask_human", source: "rule", proposed, why: q }); emitBoss(await ask(q), sid, s); }
     return;
   }
 
@@ -137,4 +126,7 @@ async function main() {
   }
 }
 
-main().catch((e) => { log({ event: "guard_error", error: String(e?.message ?? e).slice(0, 200) }); process.exit(0); });
+main().catch((e) => {
+  log({ event: "guard_error", error: redact(String(e?.message ?? e)).slice(0, 200) });
+  hold("Graveyard Shift could not validate this event. Execution is blocked; inspect the local guard state before retrying.");
+});
