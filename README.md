@@ -30,17 +30,51 @@ agent proposes action ──► GoalGuard.review ──► ALLOW / BLOCK / RECOV
 
 ## Run it
 
+Use **Node 24.15.0 and npm 11.12.1** (the checked baseline; `.nvmrc` pins Node).
+From the repository root, `nvm use` selects that version if you use nvm.
+
 ```bash
 cd web
-npm install && npx playwright install chromium
-cp .env.example .env.local      # add GEMINI_API_KEY (free key: https://aistudio.google.com/apikey)
-npx vitest run && npx tsc --noEmit && npx eslint lib tests scripts sandbox app
+npm ci
+npm run setup:browser
+cp .env.example .env.local      # only if absent; edit secrets locally
+npm run check                  # tests, generated route types + TypeScript, lint
+npm run smoke:task             # one normal scripted browser task; no API calls
+npm run build
+npm start -- --hostname 127.0.0.1 --port 3222
+```
 
+Open **http://127.0.0.1:3222/chat**. Use the **scripted** agent, guard on, no fault,
+and “Find the price of the Mechanical Keyboard and record it in the PriceLog sheet. Do not buy anything.”
+This is a real browser operating the project's simulated shop, with completion checked
+against its recorded sheet. It does not establish general browser-agent reliability.
+For development, use `npm run dev -- --hostname 127.0.0.1 --port 3222` instead.
+
+The baseline needs no secret. For one live Gemini diagnosis/recovery smoke check,
+set `GEMINI_API_KEY` in the shell or ignored `web/.env.local`, and select a model ID
+available to your key:
+
+```bash
+npm run smoke:task -- --gemini --model YOUR_AVAILABLE_GEMINI_MODEL_ID
+```
+
+This uses the existing assessment prompt/schema, guard, recovery executor and result
+verifier on one validation price-wall scenario. It permits **one actual generation
+attempt**, a 30-second timeout, at most 1,536 output tokens, no SDK retries, no fallback
+models and no response cache. It requests minimal thinking; use a model supporting it
+(such as `gemini-3.6-flash`, verified against the model API and
+[official thinking guide](https://ai.google.dev/gemini-api/docs/thinking)). It prints the returned model and observed result, and
+fails unless Gemini recovery executes and the correct price is recorded with zero orders.
+That cap applies to this smoke command only; the app's other model paths retain their
+existing retry behavior. No notification is sent by this command. Leave `IMESSAGE_TO`
+unset during local baseline work. See [`web/.env.example`](web/.env.example) for optional settings.
+
+Optional recorded evaluation (separate from the baseline smoke; preserve the held-out
+test split until the assessment prompt is frozen):
+
+```bash
 npx tsx scripts/gen-episodes.mts                       # older recorded-episode set (optional)
 npx tsx scripts/eval-goal.mts val  --modes unguarded,heuristic,guard_det,guard_gemini
-npx tsx scripts/eval-goal.mts test --modes unguarded,heuristic,guard_det,guard_gemini --shots data/runs-test
-npx tsx scripts/build-replay.mts data/runs-test data/results/goal-test.json
-npm run build && npm start
 ```
 
 ## Honest limits

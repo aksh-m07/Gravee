@@ -1,7 +1,29 @@
 # HACKATHON_STATE.md
 
-Source of truth. Read first on resume. Update after every milestone.
-Last updated: Sat 2026-10-24 (delegate mode added).
+Implementation log. The current checkpoint below supersedes conflicting historical status notes.
+Last updated: Sat 2026-10-24, working-baseline milestone.
+
+## Current checkpoint: working baseline and branch (October 24)
+
+- Scope: browser demonstration only; one scripted task in the existing simulated shop. No Claude hook installation, external notification delivery, deployment, submission or PR creation in this milestone.
+- Branch: `codex/graveyard-hackathon`, based on fetched `origin/main` at `50de62074b27689f008408d4966e408815deb6e7`. No newer main commit existed at the initial fetch. The unrelated local `.DS_Store` modification is preserved and excluded from commits.
+- Current sponsor priorities from the coordinating request: Google Gemini and Voiskey. GrokBots is optional later; Track 1 work is deferred. Earlier track decisions below are historical.
+- Planning deadline from the supplied FAQ: Devpost submission and sponsor-track opt-in by 4:00 PM Pacific; reserve 3:30–4:00 PM for recording/submission. Judging at 4:00 PM in the CSE Basement, closing attendance at 5:30 PM for eligibility. This milestone began about 12:51 PM Pacific.
+- Development timing: the supplied FAQ allows building after competition start. The historical pre-building exception below is not established authorization. Actual development provenance has not been resolved by this milestone.
+- Runtime: Node 24.15.0, npm 11.12.1. `.nvmrc` and package metadata document it. The repaired lockfile adds missing emnapi entries without changing previously locked dependency versions. Ordinary `npm ci --no-audit --no-fund` succeeds, including lifecycle scripts.
+- Setup: tracked placeholder-only `web/.env.example`; real environment files remain ignored. `npm run check` runs tests, `next typegen` plus TypeScript, then lint. `npm run setup:browser` installs the matching Playwright Chromium.
+- Verified: 126 web tests, 15 Claude guard tests, lint, generated route types/TypeScript and production build pass. The assessor's 7 focused tests were repeated after exporting its existing JSON schema for reuse.
+- Chromium: Playwright 1.64.1, Chromium/headless shell revision 1248 installed. Initial browser smoke failed before this browser was present; the post-install normal smoke passes.
+- Browser proof: `npm run smoke:task` runs `val-normal-00` through the existing deterministic guard/runner and verifies the correct Mechanical Keyboard price record, zero orders, no harm and no false success claim. The actual `/chat` UI also completed that scripted task with guard on, no shop fault, text-only mode and zero browser page errors. An initial UI automation selector was corrected before the successful check.
+- Local production server: `http://127.0.0.1:3222/chat`, started with `IMESSAGE_TO` removed from its environment. `/`, `/chat`, `/proof` and `/api/live` return HTTP 200. The server is intentionally left running after handoff.
+- Gemini credentials: an existing shell key is available; no value is printed or committed. Model metadata confirms `models/gemini-3.6-flash` is available. The optional smoke command reuses the real assessment prompt, JSON schema, validator, guard and executor. Its cap is one generation attempt per invocation, SDK retries disabled, no fallback/cache, 30-second timeout and 1,536 output tokens with minimal thinking. This cap does not cover other application model paths.
+- Live Gemini result: PASS on `val-pricewall-00`. The provider returned `model: gemini-3.6-flash`, status `completed`. One actual generation attempt in the successful invocation diagnosed the unavailable sign-in and proposed navigation to `/compare`; the deterministic guard validated it, the executor ran it, the next observed verification reported `helped: true`, and the task finished with the correct record, zero orders, no harm and no false success claim. There were three generation attempts in total across smoke development: two failed exploratory invocations, then this successful bounded invocation. No automatic retries or fallback model calls were used.
+- Failed checks during setup: original `npm ci` rejected the incomplete lockfile; repaired install passed. Browser smoke initially lacked Chromium; installed browser resolved it. Two exploratory bounded Gemini invocations produced no usable assessment (the instrumented second reported incomplete JSON); both safely ended at `ASK_HUMAN`, with zero orders. The final smoke configuration uses the exact application schema and minimal thinking with a larger bounded output allowance.
+- Remaining limitations: conditional/consequential approval handling, speech-pause auto-send, recovery-attribution metrics, actual-request accounting, persistent runs and a general Stop endpoint remain unchanged. Voiskey, notifications and endurance are unverified. No sponsor integration should be claimed from typed replies.
+
+## Historical implementation notes
+
+The entries below were inherited from the original commit and are not fresh verification. Their deadlines, sponsor priorities, credential blockers and claims may conflict with the current checkpoint above.
 
 ## Deadlines
 | Event | Deadline | Source |
