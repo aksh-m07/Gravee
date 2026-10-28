@@ -25,7 +25,7 @@ export const AssessmentSchema = z.object({
 });
 type Raw = z.infer<typeof AssessmentSchema>;
 
-const JSON_SCHEMA = {
+export const ASSESSMENT_JSON_SCHEMA = {
   type: "object",
   properties: {
     assessment: { type: "string", enum: ["progressing", "stalled", "blocked", "unsafe", "uncertain"] },
@@ -120,7 +120,7 @@ export async function buildParts(ctx: AssessContext): Promise<Part[]> {
 
 export const geminiAssessorFor = (model: string): Assessor => async (ctx) => {
   const parts = await buildParts(ctx);
-  const r = await generateJson({ model, system: SYSTEM, parts, schema: JSON_SCHEMA }, toAssessment);
+  const r = await generateJson({ model, system: SYSTEM, parts, schema: ASSESSMENT_JSON_SCHEMA }, toAssessment);
   return { assessment: r.value, ms: r.ms, cached: r.cached };
 };
 export const geminiAssessor: Assessor = geminiAssessorFor(MODELS.judge);

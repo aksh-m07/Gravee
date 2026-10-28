@@ -1,0 +1,29 @@
+STDOUT:
+
+STDERR:
+test_discount (test_price.Acceptance.test_discount) ... FAIL
+test_nearest_cent (test_price.Acceptance.test_nearest_cent) ... FAIL
+test_zero_discount (test_price.Acceptance.test_zero_discount) ... ok
+
+======================================================================
+FAIL: test_discount (test_price.Acceptance.test_discount)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/graveyard-verifier-26uoc1e1/test_price.py", line 7, in test_discount
+    self.assertEqual(discounted(1000, 20), 800)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -19000 != 800
+
+======================================================================
+FAIL: test_nearest_cent (test_price.Acceptance.test_nearest_cent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/graveyard-verifier-26uoc1e1/test_price.py", line 10, in test_nearest_cent
+    self.assertEqual(discounted(999, 15), 849)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -13986 != 849
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+FAILED (failures=2)

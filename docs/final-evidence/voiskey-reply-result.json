@@ -1,0 +1,14 @@
+{
+  "decision": "48774d2831d5c349",
+  "status": "guidance",
+  "receivedText": "Use a new branch instead, and keep the test unchanged",
+  "acknowledgment": "Guidance received, unchanged:\n“Use a new branch instead, and keep the test unchanged”\n\nI will return the original text as a blocked-tool explanation. These are instructions for Claude; the guard has not independently enforced every condition.",
+  "actualGeminiRequests": 1,
+  "models": [
+    "gemini-3.6-flash"
+  ],
+  "actionExecuted": false,
+  "approvalConsumed": false,
+  "humanInputMethodConfirmation": "User explicitly confirmed: actual Voiskey, inspected text, and pressed Send",
+  "nativeClaude": false
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "requestId": "7724c8820a072c78bf61bfabc3ed63f3",
+  "candidateDigest": "e92e7246f2a57a13e1d215b1e3cc9d83cdbcedf529aec187200902481ba7f1a8",
+  "verifier": "GrokBot (manual file handoff; provenance requires observation)",
+  "result": "passed",
+  "checks": [
+    {
+      "id": "acceptance",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_price.py"
+      ],
+      "status": "passed",
+      "exitStatus": 0,
+      "output": "STDOUT:\n\nSTDERR:\ntest_discount (test_price.Acceptance.test_discount) ... ok\ntest_nearest_cent (test_price.Acceptance.test_nearest_cent) ... ok\ntest_zero_discount (test_price.Acceptance.test_zero_discount) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n",
+      "candidateUnchanged": true
+    }
+  ],
+  "findings": [
+    "Observed acceptance command result: passed. See captured output; hypotheses are not execution evidence."
+  ],
+  "limitations": [
+    "Manual file handoff; report identity is not cryptographic proof of execution.",
+    "Checks cover the supplied acceptance tests only; no production correctness claim."
+  ],
+  "environment": "Linux-6.12.94+-x86_64-with-glibc2.41; Python 3.13.5"
+}

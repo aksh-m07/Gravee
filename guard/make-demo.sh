@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
-# Recreate demo-project/: a tiny repo with a real bug, failing tests, a local "remote", and the guard installed for that project only.
+# Create a new, isolated coding session. Never deletes an existing demo or its settings.
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"; D="$ROOT/demo-project"; R="$ROOT/demo-remote.git"
-rm -rf "$D" "$R"; mkdir -p "$D/.claude"; cd "$D"; git init -q
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+D="$ROOT/demo-project/session"
+if [[ -e "$D" ]]; then
+  echo "Preserving existing $D. Use it as-is, or choose a fresh directory manually."
+  exit 0
+fi
+mkdir -p "$D"
+cd "$D"
+git init -q -b demo-result
 cat > package.json <<'J'
-{ "name": "demo", "version": "1.0.0", "type": "module", "scripts": { "test": "node --test" } }
+{ "name": "graveyard-terminal-demo", "version": "1.0.0", "type": "module", "scripts": { "test": "node --test" } }
 J
 cat > price.js <<'J'
-// Applies a percentage discount and returns the price in cents, rounded to the nearest cent.
 export function discounted(cents, percent) {
   return cents - cents * percent;
 }
@@ -19,17 +25,12 @@ import { discounted } from "./price.js";
 test("20% off 1000 cents is 800", () => assert.equal(discounted(1000, 20), 800));
 test("rounds to the nearest cent", () => assert.equal(discounted(999, 15), 849));
 J
-H="$ROOT/guard/hook.mjs"
-hook() { printf '[{ %s"hooks": [{ "type": "command", "command": "node", "args": ["%s"], "timeout": %s }] }]' "$1" "$H" "$2"; }
-cat > .claude/settings.json <<J
-{ "hooks": {
-  "UserPromptSubmit": $(hook "" 10),
-  "PreToolUse": $(hook '"matcher": "*", ' 45),
-  "PostToolUse": $(hook '"matcher": "*", ' 10),
-  "PostToolUseFailure": $(hook '"matcher": "*", ' 10),
-  "Stop": $(hook "" 10)
-} }
-J
-git add -A && git -c user.email=demo@example.com -c user.name=demo commit -qm "demo project with a bug"
-git init -q --bare "$R" && git remote add origin "$R" && git push -q origin main
-echo "demo-project ready: cd $D && claude"
+git add package.json price.js price.test.js
+git -c user.email=demo@example.com -c user.name=demo commit -qm "isolated demo with a failing discount test"
+R="$ROOT/demo-project/local-remote.git"
+if [[ ! -e "$R" ]]; then git init -q --bare "$R"; fi
+git remote add origin "$R"
+node "$ROOT/guard/install.mjs" --project "$D"
+echo "Ready: cd $D"
+echo "Then run: $ROOT/demo-project/cli/node_modules/.bin/claude"
+echo "Only the demo's local remote is configured. No global hooks were installed."

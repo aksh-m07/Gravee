@@ -1,6 +1,9 @@
 data/raw
 web/.env*
 !web/.env.example
+guard/.env*
+!guard/.env.example
+guard/.state/
 node_modules
 .next
 .vercel

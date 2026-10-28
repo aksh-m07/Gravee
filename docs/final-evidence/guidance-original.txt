@@ -1,0 +1,35 @@
+GUIDANCE FOR CODING AGENT - discount fixture (request 5a1a1bc4f71774af6267428db6fa93dd)
+
+INSTRUCTION
+In price.py, change only the return line of discounted() to:
+    return (cents * (100 - percent) + 50) // 100
+Do not edit test_price.py or the verifier (test_price.py sha256 must stay
+09dfb909544b3a0afe3c11ef6501f52daa798b909f9462144131dd054a556554).
+Then re-run: python3 verify-request.py request.json result  (on a fresh package/snapshot).
+
+OBSERVED (failing candidate, unmodified)
+- price.py: return cents - cents * percent
+- test_discount:     discounted(1000, 20) -> -19000, expected 800
+- test_nearest_cent: discounted(999, 15)  -> -13986, expected 849
+- test_zero_discount passes. Overall: Ran 3 tests, FAILED (failures=2).
+- Both wrong values equal cents - cents*percent, i.e. percent is never divided by 100.
+
+RECOMMENDED (why this form)
+- Divide by 100 so percent is a percentage, not a multiplier.
+- Integer arithmetic avoids float error; "+ 50 then // 100" rounds half up
+  to the nearest cent, so 849.15 -> 849.
+
+TESTED (scratch copy only; candidate package NOT modified)
+- Applied the line above to a throwaway copy of price.py with the unchanged
+  test_price.py (same sha256). python3 -m unittest -v test_price.py:
+  3 tests, OK, exit 0.
+- Spot checks: (1000,20)=800, (999,15)=849, (999,0)=999, half-cent cases
+  (50,1)=50, (150,1)=149, (250,1)=248 (round half up).
+
+NOT TESTED / OPEN QUESTIONS
+- The full verify-request.py run on a repackaged candidate with this exact line
+  (it needs a new request.json/digest). Note: a separately supplied corrected
+  snapshot using round(cents * (100 - percent) / 100) did pass the verifier.
+- Negative prices, percent < 0 or > 100, and non-integer inputs: behavior is
+  undefined by the acceptance criteria; "+50 // 100" is not half-up for negatives.
+- Whether the business wants half-up vs. half-even (banker's) rounding.

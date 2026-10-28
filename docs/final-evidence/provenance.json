@@ -1,0 +1,16 @@
+{
+  "artifact": "guidance-original.txt",
+  "sha256": "3d0f5ce4494a8703f641e2f045cf7064d2c26df7b11642f6eadc8e4aadbecb9a",
+  "source": "Downloaded unchanged from actual Grok Bot app, Graveyard Verifier, guidance.txt attachment at 2026-10-24 15:27:43 Pacific",
+  "verificationRequest": "5a1a1bc4f71774af6267428db6fa93dd",
+  "provenance": "operator-observed product interaction and downloaded artifact; not signed remote execution attestation",
+  "originalCharacters": 1878,
+  "contentsExecuted": false,
+  "scratchRepairTesting": "Claimed by GrokBot response; no new structured verification package imported for this exact repair",
+  "conciseArtifact": {
+    "file": "guidance-short.txt",
+    "characters": 769,
+    "sha256": "9245b87588d68872273ba7dc0792d2bd47f7453db03b449df7bf611840fb460f",
+    "source": "Actual GrokBot artifact at 15:29:47 Pacific, authored in response to human request for a shorter version preserving restrictions; saved manually by user, inspected without execution; copied byte-for-byte"
+  }
+}

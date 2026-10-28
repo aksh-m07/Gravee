@@ -1,0 +1,13 @@
+FIX (request 5a1a1bc4f71774af6267428db6fa93dd)
+In price.py change only the return line of discounted() to:
+    return (cents * (100 - percent) + 50) // 100
+Cause: the old code (cents - cents * percent) never divides by 100.
+Do not edit test_price.py (sha256 09dfb909...556554) or verify-request.py.
+Re-run python3 verify-request.py request.json result on a fresh snapshot in a new directory.
+
+TESTED: scratch copy only, candidate not modified. With unchanged tests: 3/3 OK, exit 0.
+NOT TESTED: full verifier run on a repackaged candidate (needs new request/digest).
+
+LIMITS: Only covers integer cents with percent 0-100. Negative values aren't
+rounded half-up. Out-of-range percents are undefined. Rounds exact halves up,
+not to even; confirm which the business wants.
