@@ -61,7 +61,7 @@ node guard/verification.mjs cancel --id REQUEST_ID
 env -u GEMINI_API_KEY -u GOOGLE_API_KEY node --test guard/test/verification.test.mjs
 ```
 
-The tests run the helper locally against both defective and corrected temporary candidates and reject tampered content. Those are explicitly **local regression checks, not GrokBot evidence**. A corrected external demonstration requires a separate exported snapshot and actual Bot execution. Native authenticated Claude continuation and actual Voiskey use remain separate pending checks.
+The tests run the helper locally against both defective and corrected temporary candidates and reject tampered content. Those are explicitly **local regression checks, not GrokBot evidence**. A corrected external demonstration requires a separate exported snapshot and actual Bot execution. Native guidance continuation is now user-confirmed, and actual Voiskey use has a saved human-confirmed Telegram reply. Those separate results are documented in [the current checklist](../docs/VERIFICATION_CHECKLIST.md); they are not inferred from local helper tests.
 
 ## Attach findings and owner-selectable guidance to an existing decision
 
@@ -71,7 +71,7 @@ While the existing synchronous hook is waiting, run from the repository root (re
 node guard/verification.mjs attach --id 5a1a1bc4f71774af6267428db6fa93dd --decision PENDING_DECISION_ID --guidance-file guard/verification-demo/guidance-test.txt --source test_text
 ```
 
-This exact fixture command sends actual imported GrokBot **test findings**, paired with an explicitly labelled **TEST recommendation, not Grok-authored**. It does not invoke GrokBot. For a real recommendation, manually obtain and save GrokBot's explicit response as a UTF-8 text file, then use `--guidance-file /absolute/path/recommendation.txt --source captured_grokbot_artifact`. The source label is an operator attestation, not authenticated authorship. Use `operator_entered` for your own recommendation. Do not infer a repair merely because tests failed.
+This fixture command assumes the original demonstration request has already been imported on this machine. On a fresh clone, use the fresh request ID from your own export/import instead; the historical request cannot be re-imported after expiry. The command sends imported GrokBot **test findings**, paired with an explicitly labelled **TEST recommendation, not Grok-authored**. It does not invoke GrokBot. For a real recommendation, manually obtain and save GrokBot's explicit response as a UTF-8 text file, then use `--guidance-file /absolute/path/recommendation.txt --source captured_grokbot_artifact`. The source label is an operator attestation, not authenticated authorship. Use `operator_entered` for your own recommendation. Do not infer a repair merely because tests failed.
 
 Omit `--guidance-file` for findings only; no Use action appears. Guidance is limited to 1,000 characters. Empty, oversized, or recognized secret-bearing text is rejected, never silently shortened. Telegram shows the **entire exact recommendation**; only findings/output excerpts are abbreviated, with full imported evidence retained locally.
 

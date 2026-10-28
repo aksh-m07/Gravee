@@ -1,6 +1,6 @@
 # Teammate: real Claude + Telegram conversation test
 
-This checklist is for your own authenticated Claude machine and a disposable project. Do not share account passwords or paste tokens into chat. This Mac has not verified an authenticated Claude task. Browser tests and synthetic hook callers do not establish that result.
+This checklist is for an authenticated Claude machine and a disposable project. The owner has now confirmed native held-action blocking, Telegram guidance and Claude continuation; [the confirmation note](../docs/final-evidence/native-claude-user-confirmation.md) records its scope. Use this checklist to repeat the flow and collect a version, transcript and independent marker/diff evidence. Do not share passwords or tokens. Browser tests and synthetic hook callers are separate from the native result.
 
 ## 1. Preserve your work and fetch the branch
 
@@ -9,7 +9,7 @@ From an existing clone, inspect your current work, then create a fresh detached 
 ```bash
 git status --short
 git fetch origin
-git worktree add --detach ../graveyard-terminal-test origin/codex/graveyard-hackathon
+git worktree add --detach ../graveyard-terminal-test origin/main
 cd ../graveyard-terminal-test
 ```
 
@@ -88,7 +88,7 @@ Verify the discount fix, passing tests, and unchanged dependency files independe
 
 Record CLI version, commit, decision/session ID, received text, actual input method, model(s), request count, evidence and native result. Screenshot only redacted proof; no token or local environment file.
 
-Separately test Reject, Stop, silence and one exact-action approval with the same harmless local remote. Stop ends the turn/session's permitted progress, not the OS process. It persists a veto until a new human prompt begins `Resume`. Late replies cannot automatically resume an expired/interrupted tool. Native allow/deny/ask/hook-timeout outcomes remain unverified until you observe them; ask is not used as a fallback in this implementation.
+Separately test Reject, Stop, silence and one exact-action approval with the same harmless local remote. Stop ends the turn/session's permitted progress, not the OS process. It persists a veto until a new human prompt begins `Resume`. Late replies cannot automatically resume an expired/interrupted tool. The native guidance-denial/continuation path is user-confirmed. Native exact-action approval, Stop and hook-timeout cases still require their own observed results; ask is not used as a fallback in this implementation.
 
 ## 7. Stop and remove local demo hooks
 
