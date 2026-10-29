@@ -1,9 +1,20 @@
 # HACKATHON_STATE.md
 
 Implementation log. The current checkpoint below supersedes conflicting historical status notes.
-Last updated: Sat 2026-10-24, final observed verification and submission handoff.
+Last updated: Wed 2026-10-28, résumé-facing documentation and user-confirmed native Claude result.
 
-## Current checkpoint: final verification and recording handoff
+
+## Current checkpoint: résumé-facing documentation and native guidance confirmation (October 28)
+
+- PR #1 was merged into `main` at `9cc017ff4a77ffdaeb7ddf038210f61187223b71`, preserving all six Vaidik-authored milestone commits. This documentation follow-up starts from that merged base on `codex/graveyard-hackathon`; it does not rewrite history or modify the application. Unrelated `.DS_Store` remains unstaged.
+- **Native Claude guidance flow: tested, user-confirmed.** The owner stated the project worked in a real Claude terminal and explicitly confirmed: guard paused an action → Telegram received guidance → Claude continued with that guidance → original held action stayed blocked. Recorded October 28, not an asserted execution date. Raw transcript, host, CLI version and decision/session identifiers were not supplied. This confirmation does not cover every native approval/Stop/timeout case or establish Grok-authored guidance inside the native session. See `docs/final-evidence/native-claude-user-confirmation.md`.
+- Actual Voiskey dictation and real GrokBot verification/recommendation selection retain their October 24 saved artifacts and provenance. No old JSON is relabelled as native Claude evidence. Grok handoff remains manual; the exact later proposed integer-arithmetic repair still lacks a new structured snapshot verification.
+- Added the owner-provided demo video `https://youtu.be/pKWqgBBliBA` to the front page and presentation docs. The video's contents were not independently reverified during this update.
+- Added contributor credit based on the original project-planning chat and Git history: Aksh supplied the original repository/browser-supervision baseline; Vaidik extended reproducible setup, terminal/Gemini supervision, private Telegram decisions/conversations, Grok verification/guidance attachment, tests and demonstration evidence. No unsupported personal credit is assigned for who operated the later native test. Detailed commit mapping and résumé wording are in `docs/PROJECT_CONTRIBUTIONS.md`.
+- Updated README, terminal setup, native test checklist, Grok documentation, verification checklist and demo/submission text so current claims agree. The earlier dated checkpoints below are historical, including pending states that were accurate at the time.
+- Validation for this documentation-only change: local Markdown links and artifact consistency, whitespace, staged-file/credential exclusions. The 91 guard-test result remains the recorded October 24 baseline; no model requests, live notifications, tests or web builds are needed for wording changes.
+
+## Previous checkpoint: final verification and recording handoff
 
 - Base `a2e6cbd18df1b02d07d05c962e24abb802a2c01a`; same `codex/graveyard-hackathon`. Started **3:28 PM Pacific**. This pass changes only documentation/evidence, with an ignored local test caller using existing APIs/CLI. No new feature, application fix, broad test rerun, web rebuild, deployment, main merge or submission. Preserve unrelated `.DS_Store` and secrets.
 - Actual Grok Bot app, `Graveyard Verifier`, showed the human's investigation request at 3:27:07 PM and `guidance.txt` artifact at 3:27:43 PM. Downloaded **1,878-character original unchanged** and inspected as text, never executed. Its proposed integer-arithmetic repair is distinct from the earlier supplied `round(...)` passing snapshot. GrokBot reports tests in a throwaway scratch copy; this exact repair has **not** received a new structured verification request/import. Source, qualification and limitations are preserved.

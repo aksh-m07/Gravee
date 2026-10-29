@@ -1,6 +1,10 @@
 # Observed verification and remaining limits
 
-## Verified
+Updated October 28, 2026. [Demo video](https://youtu.be/pKWqgBBliBA). Saved October 24 artifacts retain their original provenance; the later native result is a separate owner confirmation.
+
+## Tested behavior and evidence
+
+- **Native Claude guidance flow: tested, user-confirmed.** On October 28 the owner explicitly confirmed that a real Claude session held the original action, received Telegram guidance, and continued using it while the original action stayed blocked. [Confirmation and scope](final-evidence/native-claude-user-confirmation.md). The actual test date, host, CLI version and raw native transcript were not supplied; this does not certify all native Stop/approval/timeout cases.
 
 - Existing private Telegram pairing, exact-action one-use approval against a fake local remote, Stop, rejection and expiry through explicit test callers.
 - Existing live Gemini diagnosis and typed question → guidance conversation using synthetic evidence. Earlier milestones record models and request counts.
@@ -13,7 +17,7 @@
 
 ## Unverified / pending
 
-- Teammate's authenticated native Claude test result: unavailable at this checkpoint. The synthetic callers do not establish Claude execution, continuation or applied repair.
+- Raw native Claude session evidence and environment details; the basic guidance flow is user-confirmed, while native Stop, exact-action approval and hook-timeout cases remain outside that confirmation.
 - A new structured verification request/report for the exact integer-arithmetic repair GrokBot recommended. The Bot reports a scratch-copy test, which is a distinct claim from the prior imported passing snapshot using `round(...)`.
 
 ## Scope limits
@@ -21,5 +25,5 @@
 - Manual file upload/download and explicit attachment; no Grok execution API or automatic Grok invocation from Telegram.
 - Guidance is inert text until a human-controlled coding agent chooses a next action. The test caller never executes the held action.
 - Snapshot association and operator-observed artifact provenance are not signed proof of remote execution.
-- No native Claude result, costs, production correctness, deployment, external push or Devpost submission is inferred from these demonstrations.
+- Synthetic fixture artifacts do not prove native Claude behavior; the native guidance status comes from the separate owner confirmation. No costs, production correctness, deployment, external push or Devpost submission is inferred from the fixture demonstrations.
 - Finished/expired decisions cannot resume. Start a fresh supported continuation and explicitly reattach; only one bot update consumer can run at a time.

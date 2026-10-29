@@ -7,11 +7,15 @@ cd /Users/vaidiknadheria/Documents/Codex/2026-10-24/b/Gravee
 node --version
 ```
 
-Use the existing Node 24.15.0 runtime. Do not reinstall dependencies or rerun unrelated builds. The existing secondary browser app is at `http://127.0.0.1:3222/chat`; it is optional and already running from the earlier milestone.
+Use the existing Node 24.15.0 runtime. Do not reinstall dependencies or rerun unrelated builds. The optional secondary browser baseline uses `http://127.0.0.1:3222/chat` after launch; follow the setup in `web/README.md`. Its current running state is not asserted here.
 
 ## Real Telegram, actual Grok-authored guidance, synthetic decision
 
-The prepared local verification caller is ignored, contains no secrets and uses existing application functions. It creates a fresh relevant synthetic held-push decision, invokes the supported attach CLI with `captured_grokbot_artifact`, waits on the existing single consumer and asserts exact guidance, once, no approval. It never runs the held action or downloaded text.
+The prepared local verification caller is ignored and is **not included in a fresh clone**. It creates a fresh synthetic decision using existing APIs, but depends on the original machine's already-imported October 24 verification state. The committed `guard/smoke-grok-guidance.mjs` also references a historical imported request and uses explicitly labelled **test text**; it is not a fresh-clone shortcut for actual Grok guidance.
+
+For a fresh clone, first configure the private owner, then follow [GROKBOT_TEST.md](../guard/GROKBOT_TEST.md) to export a new candidate, obtain a real GrokBot report, and import it with the fresh request ID. Attach that result and the captured recommendation to a new waiting native decision. Replace the historical verification ID in the command below with your new ID. Expired requests cannot be imported again. The original recorded evidence remains under `docs/final-evidence/`.
+
+On the original prepared machine, this local caller never executes a held action or downloaded text:
 
 ```bash
 node guard/.state/final-grok-button.mjs
@@ -50,6 +54,6 @@ Open `docs/final-evidence/` for preserved recommendation files, provenance, exac
 
 ## Native Claude
 
-Use `guard/TEAMMATE_TEST.md` on the teammate's own authenticated machine. Do not retry authentication on this Mac or share credentials. Confirm this Mac's Telegram consumer has ended before the teammate starts one. No teammate message was sent by the agent.
+The owner confirmed native held-action blocking, Telegram guidance and Claude continuation. See `docs/final-evidence/native-claude-user-confirmation.md` for provenance. Use `guard/TEAMMATE_TEST.md` on an authenticated machine to repeat the test and collect detailed evidence. Never share credentials, and confirm the previous Telegram consumer has ended before another machine starts one. This documentation update does not authenticate Claude or launch a session.
 
 Record and submit manually. These commands do not deploy, merge, publish or submit Devpost.
